@@ -33,9 +33,15 @@ python build_release.py --pack-dir "C:\путь\к\сборке" --tag pack-v1.0
 друзьям (файл один, ничего ставить не надо; Windows может ругнуться SmartScreen —
 «Подробнее → Выполнить в любом случае»).
 
+Готовая прямая ссылка на последний exe:
+`https://github.com/NikitaF5/PokeTechArcana/releases/latest/download/PokeTechLauncher.exe`
+
 ## Обновление сборки (потом, 1 команда)
 Добавил/убрал моды на сервере → повтори шаг 3 с новым тегом (`pack-v1.0.1`).
 Неизменённые jar'ы не перезаливаются. Друзьям ничего делать не надо.
+
+Актуальный манифест, который читает лаунчер:
+`https://github.com/NikitaF5/PokeTechArcana/releases/latest/download/manifest.json`
 
 ## Как это выглядит у друзей
 Запустил exe → ввёл ник → двинул ползунок памяти → ИГРАТЬ.
