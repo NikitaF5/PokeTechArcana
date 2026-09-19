@@ -1,0 +1,14 @@
+{
+  "BOMD-NeoForge-1.21-1.3.3.jar": ["BOMD-NeoForge-1.21-1.3.2.jar"],
+  "Cobblemon-neoforge-1.8.0+1.21.1.jar": ["Cobblemon-neoforge-1.7.3+1.21.1.jar"],
+  "Cobblemon-Utility+-neoforge-1.8.0.jar": ["Cobblemon-Utility+-neoforge-1.7.3.jar"],
+  "cobblemonraiddens-neoforge-0.12.0+1.21.1.jar": ["cobblemonraiddens-neoforge-0.11.2+1.21.1.jar"],
+  "cobblemon_kubejs-neoforge-1.0.2.jar": ["cobblemon_kubejs-neoforge-1.0.0.jar"],
+  "counter-neoforge-1.8.0-1.9.0.jar": ["counter-neoforge-1.7.3-1.9.0.jar"],
+  "ftb-teams-neoforge-2101.1.11.jar": ["ftb-teams-neoforge-2101.1.10.jar"],
+  "mega_showdown-neoforge-1.1.2+1.8+1.21.1-release.jar": ["mega_showdown-neoforge-1.8.4+1.7.3+1.21.1.jar"],
+  "rctapi-neoforge-1.21.1-0.16.1-beta.jar": ["rctapi-neoforge-1.21.1-0.15.2-beta.jar"],
+  "rctmod-neoforge-1.21.1-0.19.0-beta.jar": ["rctmod-neoforge-1.21.1-0.18.1-beta.jar"],
+  "timcore-neoforge-1.8.0-1.32.0.jar": ["timcore-neoforge-1.7.3-1.32.0.jar"],
+  "zamega-neoforge-1.8.1+1.8.jar": ["zamega-neoforge-1.7.3.jar"]
+}
