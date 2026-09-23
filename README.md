@@ -43,6 +43,18 @@ python build_release.py --pack-dir "C:\путь\к\сборке" --tag pack-v1.0
 Актуальный манифест, который читает лаунчер:
 `https://github.com/NikitaF5/PokeTechArcana/releases/latest/download/manifest.json`
 
+## Серверные изменения и восстановление
+
+Начиная с `pack-v1.3.2`, релизы также содержат архив кастомных серверных
+изменений и переносимый архив проекта. Инструкция по полному восстановлению:
+[SERVER-RECOVERY.md](SERVER-RECOVERY.md).
+
+Текущая серверная база: Minecraft 1.21.1, NeoForge 21.1.250, Cobblemon 1.8.0.
+В `pack-v1.3.2` добавлен Cobblemon Stellar Blue 1.5: категория Lumora с
+Tigriff, Emberam и Equelpi, остальные fakemon аддона, их модели и spawn pools.
+Сервер требует официальный ресурс-пак Stellar Blue с Modrinth, поэтому клиент
+получает те же модели и текстуры до открытия окна выбора стартовика.
+
 ## Как это выглядит у друзей
 Запустил exe → ввёл ник → двинул ползунок памяти → ИГРАТЬ.
 Первый запуск скачает ваниллу+NeoForge+моды (5–15 минут), дальше — секунды.
