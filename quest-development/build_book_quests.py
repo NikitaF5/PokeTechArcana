@@ -1,0 +1,481 @@
+from __future__ import annotations
+
+import hashlib
+import math
+import random
+import shutil
+import zipfile
+from dataclasses import dataclass
+from pathlib import Path
+
+from PIL import Image, ImageDraw, ImageFont
+
+import build_mekanism_quests as old_mek
+
+
+ROOT = Path(__file__).resolve().parent
+WORKSPACE = ROOT.parent
+BUILD = ROOT / "book-build"
+QUESTS = BUILD / "config" / "ftbquests" / "quests"
+ASSETS = BUILD / "kubejs" / "assets"
+CLIENT_PACK = WORKSPACE / "skyblock-update" / "pack"
+GROUP_ID = "A71C0B00CAFE1001"
+SKY_CHAPTER_ID = "A71C0B00CAFE2001"
+MEK_CHAPTER_ID = old_mek.CHAPTER_ID
+
+
+@dataclass(frozen=True)
+class Quest:
+    key: str
+    title: str
+    phase: str
+    desc: str
+    x: float
+    y: float
+    shape: str
+    size: float
+    tasks: tuple[tuple[str, int], ...]
+    deps: tuple[str, ...]
+    reward: tuple[str, int]
+    xp: int
+    tag: str
+    icon: str | None = None
+
+
+def hid(namespace: str, kind: str, key: str) -> str:
+    return hashlib.sha256(f"poketech-book-v1:{namespace}:{kind}:{key}".encode()).hexdigest()[:16].upper()
+
+
+def q(value: str) -> str:
+    return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+
+def sky_pos(px: float, py: float) -> tuple[float, float]:
+    return round((px - 4.0) * 0.33, 2), round((py - 50.0) * 0.26, 2)
+
+
+def sq(key, title, phase, desc, px, py, shape, size, task, deps, reward, xp, tag, icon=None):
+    x, y = sky_pos(px, py)
+    tasks = task if isinstance(task, tuple) and task and isinstance(task[0], tuple) else (task,)
+    return Quest(key, title, phase, desc, x, y, shape, size, tuple(tasks), tuple(deps), reward, xp, tag, icon)
+
+
+SKY = [
+    sq("start", "Первый блок", "I · ОСТРОВ", "Прими стартовый набор и сохрани первый саженец. Потеря дерева в пустоте остановит развитие острова.", 4, 50, "diamond", 1.65, ("minecraft:oak_sapling", 1), (), ("minecraft:dirt", 4), 1, "pta_main"),
+    sq("crook", "Крюк", "I · ОСТРОВ", "Сделай крюк и собери листья. Он заметно повышает шанс получить саженцы и шелкопряда.", 11, 50, "circle", 1.1, ("exdeorum:crook", 1), ("start",), ("minecraft:oak_sapling", 4), 1, "pta_main"),
+    sq("string", "Шёлковая нить", "I · ОСТРОВ", "Зарази листья шелкопрядом и дождись полного распространения. Так остров получит первую нить.", 18, 50, "circle", 1.1, ("minecraft:string", 16), ("crook",), ("exdeorum:string_mesh", 1), 2, "pta_main"),
+    sq("sieve", "Ручное сито", "II · СИТО", "Установи сито, вставь сетку и начинай ручное просеивание. Соседние сита можно использовать одновременно.", 25, 50, "hexagon", 1.45, (("exdeorum:oak_sieve", 1), ("exdeorum:string_mesh", 1)), ("string",), ("minecraft:flint", 8), 2, "pta_main"),
+    sq("pebbles", "Камешки", "II · СИТО", "Просей землю или собери камешки доступным рецептом и сложи их в полноценный камень.", 32, 50, "circle", 1.1, ("exdeorum:stone_pebble", 64), ("sieve",), ("minecraft:cobblestone", 16), 2, "pta_main"),
+    sq("cobble", "Булыжник", "III · КАМЕНЬ", "Создай устойчивый запас булыжника — основу дробления, лавы и будущей автоматизации.", 39, 50, "circle", 1.1, ("minecraft:cobblestone", 64), ("pebbles",), ("exdeorum:wooden_hammer", 1), 2, "pta_main"),
+    sq("hammer", "Дробление", "III · КАМЕНЬ", "Молот превращает булыжник в гравий, гравий в песок, а песок в пыль.", 46, 50, "circle", 1.1, ("exdeorum:stone_hammer", 1), ("cobble",), ("minecraft:flint", 8), 2, "pta_main"),
+    sq("flintmesh", "Кремнёвая сетка", "III · КАМЕНЬ", "Улучшенная сетка открывает металлические кусочки и ускоряет начало технической эпохи.", 53, 50, "circle", 1.1, ("exdeorum:flint_mesh", 1), ("hammer",), ("exdeorum:iron_ore_chunk", 8), 3, "pta_main"),
+    sq("ores", "Рудный поток", "IV · РЕСУРСЫ", "Наладь постоянное просеивание гравия. Железо и медь станут первыми промышленными металлами.", 60, 50, "circle", 1.1, (("exdeorum:iron_ore_chunk", 32), ("exdeorum:copper_ore_chunk", 32)), ("flintmesh",), ("minecraft:iron_ingot", 8), 4, "pta_main"),
+    sq("ironmesh", "Железная сетка", "IV · РЕСУРСЫ", "Железная сетка открывает редстоун, золото и редкие ресурсы для машин.", 67, 50, "circle", 1.1, ("exdeorum:iron_mesh", 1), ("ores",), ("minecraft:redstone", 16), 4, "pta_main"),
+    sq("generator", "Бесконечный камень", "V · ИЗМЕРЕНИЯ", "Собери безопасный генератор булыжника и докажи его производительность сжатым блоком.", 74, 50, "octagon", 1.45, ("exdeorum:compressed_cobblestone", 1), ("ironmesh",), ("exdeorum:diamond_hammer", 1), 5, "pta_main"),
+    sq("autohammer", "Flux Hammer", "VI · АВТО", "Подай FE в электрический молот и автоматизируй всю цепочку дробления.", 81, 50, "square", 1.35, ("exmachinis:flux_hammer", 1), ("generator",), ("exmachinis:gold_upgrade", 1), 6, "pta_auto"),
+    sq("autosieve", "Flux Sieve", "VI · АВТО", "Автоматическое сито превращает стабильный поток блоков в стабильный поток ресурсов.", 88, 50, "square", 1.35, ("exmachinis:flux_sieve", 1), ("autohammer",), ("exmachinis:diamond_upgrade", 1), 7, "pta_auto"),
+    sq("core", "Ресурсное ядро", "VII · ПЕРЕХОД", "Объедини дробление, просеивание, уплотнение и вывод предметов. Остров готов к промышленной механизации.", 96, 50, "diamond", 1.75, (("exmachinis:flux_compactor", 1), ("exmachinis:item_buffer", 1)), ("autosieve", "export"), ("create:andesite_alloy", 16), 12, "pta_transition"),
+
+    sq("tree", "Дерево в пустоте", "I · ОСТРОВ", "Выращивай деревья на безопасной площадке и не допускай падения саженцев в пустоту.", 5, 29, "octagon", 1.0, ("minecraft:oak_log", 32), ("start",), ("minecraft:bone_meal", 8), 1, "pta_resource"),
+    sq("sapling", "Запас саженцев", "I · ОСТРОВ", "Сохрани резерв саженцев до расширения острова.", 12, 19, "octagon", 1.0, ("minecraft:oak_sapling", 8), ("tree",), ("minecraft:dirt", 2), 1, "pta_resource"),
+    sq("silkworm", "Шелкопряд", "I · ОСТРОВ", "Получи шелкопряда крюком и используй его только на отдельном дереве.", 12, 35, "octagon", 1.0, ("exdeorum:silkworm", 1), ("crook",), ("minecraft:string", 8), 1, "pta_resource"),
+    sq("stringmesh", "Нитяная сетка", "II · СИТО", "Сплети первую сетку. Её можно зачаровывать на эффективность и удачу.", 24, 34, "octagon", 1.0, ("exdeorum:string_mesh", 1), ("string",), ("minecraft:flint", 4), 1, "pta_resource"),
+    sq("barrel", "Деревянная бочка", "I · ОСТРОВ", "Бочка компостирует органику и участвует в превращениях жидкостей.", 20, 68, "octagon", 1.0, ("exdeorum:oak_barrel", 1), ("sieve",), ("minecraft:oak_leaves", 16), 2, "pta_resource"),
+    sq("compost", "Компост", "I · ОСТРОВ", "Заполни бочку листьями или растениями и получи возобновляемую землю.", 28, 76, "octagon", 1.0, ("minecraft:dirt", 8), ("barrel",), ("exdeorum:grass_seeds", 1), 2, "pta_resource"),
+    sq("water", "Бесконечная вода", "I · ОСТРОВ", "Создай источник воды. Он потребуется для глины, ведьминой воды и производственных линий.", 36, 72, "octagon", 1.0, ("minecraft:water_bucket", 1), ("compost",), ("minecraft:bucket", 2), 2, "pta_resource"),
+    sq("clay", "Глина", "III · КАМЕНЬ", "Добавь пыль в воду и получи глину для фарфорового тигля.", 45, 72, "octagon", 1.0, ("minecraft:clay_ball", 16), ("water",), ("minecraft:bone_meal", 8), 2, "pta_resource"),
+
+    sq("gravel", "Гравий", "III · КАМЕНЬ", "Раздроби булыжник молотом.", 43, 61, "octagon", 1.0, ("minecraft:gravel", 64), ("hammer",), ("minecraft:flint", 8), 2, "pta_resource"),
+    sq("sand", "Песок", "III · КАМЕНЬ", "Продолжи дробление гравия.", 50, 65, "octagon", 1.0, ("minecraft:sand", 64), ("gravel",), ("minecraft:glass", 8), 2, "pta_resource"),
+    sq("dust", "Пыль", "III · КАМЕНЬ", "Раздроби песок до тонкой фракции.", 57, 69, "octagon", 1.0, ("exdeorum:dust", 64), ("sand",), ("minecraft:clay", 4), 3, "pta_resource"),
+    sq("porcelain", "Фарфор", "III · КАМЕНЬ", "Смешай глину с костной мукой и подготовь жаростойкий материал.", 63, 75, "octagon", 1.0, ("exdeorum:porcelain_clay_ball", 8), ("clay",), ("exdeorum:unfired_porcelain_crucible", 1), 3, "pta_resource"),
+    sq("crucible", "Тигель", "III · КАМЕНЬ", "Обожги фарфоровый тигель и установи его над подходящим источником тепла.", 69, 69, "octagon", 1.0, ("exdeorum:porcelain_crucible", 1), ("porcelain",), ("minecraft:cobblestone", 16), 3, "pta_resource"),
+    sq("lava", "Лава", "III · КАМЕНЬ", "Расплавь камень в тигле и получи первое ведро лавы.", 75, 64, "octagon", 1.0, ("exdeorum:porcelain_lava_bucket", 1), ("crucible",), ("minecraft:obsidian", 4), 4, "pta_resource"),
+    sq("obsidian", "Обсидиан", "V · ИЗМЕРЕНИЯ", "Соедини воду и лаву безопасной конструкцией.", 81, 69, "octagon", 1.0, ("minecraft:obsidian", 10), ("lava",), ("minecraft:crying_obsidian", 2), 4, "pta_resource"),
+
+    sq("coal", "Уголь из сита", "IV · РЕСУРСЫ", "Подготовь устойчивое топливо для первых печей и генераторов.", 53, 30, "octagon", 1.0, ("minecraft:coal", 32), ("flintmesh",), ("minecraft:coal_block", 1), 3, "pta_resource"),
+    sq("iron", "Железные кусочки", "IV · РЕСУРСЫ", "Собери рудные кусочки и переплавь первое промышленное железо.", 56, 23, "octagon", 1.0, ("exdeorum:iron_ore_chunk", 32), ("ores",), ("minecraft:iron_ingot", 8), 3, "pta_resource"),
+    sq("copper", "Медные кусочки", "IV · РЕСУРСЫ", "Запаси медь для Create, кабелей и технических рецептов.", 62, 36, "octagon", 1.0, ("exdeorum:copper_ore_chunk", 32), ("ores",), ("minecraft:copper_ingot", 8), 3, "pta_resource"),
+    sq("gold", "Золотой поток", "IV · РЕСУРСЫ", "Золото понадобится для улучшенных сеток, электроники и торговли.", 62, 20, "octagon", 1.0, ("exdeorum:gold_ore_chunk", 16), ("ironmesh",), ("minecraft:gold_ingot", 8), 4, "pta_resource"),
+    sq("redstone", "Красный камень", "IV · РЕСУРСЫ", "Создай запас редстоуна для автоматических машин и управляющих схем.", 68, 33, "octagon", 1.0, ("minecraft:redstone", 32), ("ironmesh",), ("minecraft:repeater", 2), 4, "pta_resource"),
+    sq("diamondmesh", "Алмазная сетка", "IV · РЕСУРСЫ", "Алмазная сетка повышает качество просеивания и открывает редкие материалы.", 71, 24, "octagon", 1.0, ("exdeorum:diamond_mesh", 1), ("gold",), ("minecraft:diamond", 2), 5, "pta_resource"),
+    sq("diamonds", "Алмазы", "IV · РЕСУРСЫ", "Получи достаточно алмазов для инструментов и следующего уровня сетки.", 77, 18, "octagon", 1.0, ("minecraft:diamond", 8), ("diamondmesh",), ("minecraft:experience_bottle", 16), 5, "pta_resource"),
+    sq("emerald", "Изумруды", "IV · РЕСУРСЫ", "Подготовь торговый ресурс для жителей и серверной экономики.", 77, 31, "octagon", 1.0, ("minecraft:emerald", 8), ("diamondmesh",), ("minecraft:emerald_block", 1), 5, "pta_resource"),
+    sq("netheritemesh", "Незеритовая сетка", "IV · РЕСУРСЫ", "Высшая сетка завершает ручную прогрессию просеивания.", 83, 22, "octagon", 1.0, ("exdeorum:netherite_mesh", 1), ("diamonds",), ("exmachinis:netherite_upgrade", 1), 7, "pta_resource"),
+    sq("techores", "Технологические руды", "IV · РЕСУРСЫ", "Добудь осмий и уран для будущей главы Mekanism.", 83, 34, "octagon", 1.0, (("exdeorum:osmium_ore_chunk", 16), ("exdeorum:uranium_ore_chunk", 16)), ("emerald",), ("mekanism:ingot_osmium", 4), 7, "pta_resource"),
+
+    sq("witchwater", "Ведьмина вода", "V · ИЗМЕРЕНИЯ", "Поставь бочку с водой над мицелием и дождись тёмного превращения.", 64, 84, "circle", 1.0, ("exdeorum:witch_water_bucket", 1), ("water",), ("exdeorum:mycelium_spores", 1), 4, "pta_danger"),
+    sq("soulsand", "Песок душ", "V · ИЗМЕРЕНИЯ", "Используй ведьмину воду для получения песка душ и незерских ресурсов.", 70, 88, "circle", 1.0, ("minecraft:soul_sand", 32), ("witchwater",), ("minecraft:quartz", 16), 4, "pta_danger"),
+    sq("doll", "Подготовка призыва", "V · ИЗМЕРЕНИЯ", "Собери материалы для безопасного получения огненных ресурсов на острове.", 76, 84, "circle", 1.0, ("minecraft:blaze_powder", 8), ("soulsand",), ("minecraft:fire_charge", 4), 5, "pta_danger"),
+    sq("blaze", "Огненный рубеж", "V · ИЗМЕРЕНИЯ", "Получи огненные стержни и подготовься к варке зелий и измерениям.", 82, 80, "circle", 1.0, ("minecraft:blaze_rod", 8), ("doll",), ("minecraft:brewing_stand", 1), 5, "pta_danger"),
+    sq("nether", "Незерские материалы", "V · ИЗМЕРЕНИЯ", "Собери кварц, светокамень и другие ресурсы измерения без разрушения обычных миров.", 89, 75, "circle", 1.0, (("minecraft:quartz", 32), ("minecraft:glowstone_dust", 32)), ("blaze",), ("minecraft:ender_pearl", 4), 6, "pta_danger"),
+
+    sq("power", "Питание машин", "VI · АВТО", "Подготовь стабильный источник FE для Ex Machinis.", 76, 59, "square", 1.0, ("mekanismgenerators:heat_generator", 1), ("generator",), ("mekanism:basic_universal_cable", 8), 5, "pta_auto"),
+    sq("fluxhammer", "Электрическое дробление", "VI · АВТО", "Настрой вход сверху и вывод вперёд у Flux Hammer.", 82, 62, "square", 1.0, ("exmachinis:flux_hammer", 1), ("power",), ("exmachinis:gold_upgrade", 1), 5, "pta_auto"),
+    sq("fluxsieve", "Электрическое просеивание", "VI · АВТО", "Установи сетку в Flux Sieve и организуй автоматическую подачу блоков.", 84, 55, "square", 1.0, ("exmachinis:flux_sieve", 1), ("power",), ("exmachinis:item_buffer", 1), 5, "pta_auto"),
+    sq("upgrades", "Комплект улучшений", "VI · АВТО", "Ускорь обработку золотыми и алмазными улучшениями.", 88, 66, "square", 1.0, (("exmachinis:gold_upgrade", 2), ("exmachinis:diamond_upgrade", 1)), ("fluxhammer",), ("exmachinis:comparator_upgrade", 1), 6, "pta_auto"),
+    sq("bulk", "Пакетная переработка", "VI · АВТО", "Используй сжатые блоки для повышения пропускной способности линии.", 93, 63, "square", 1.0, ("exdeorum:compressed_gravel", 8), ("upgrades",), ("exdeorum:compressed_sand", 8), 6, "pta_auto"),
+    sq("export", "Вывод в производство", "VII · ПЕРЕХОД", "Установи буфер и уплотнитель, чтобы ресурсы автоматически попадали в общий склад.", 96, 56, "diamond", 1.25, (("exmachinis:item_buffer", 1), ("exmachinis:flux_compactor", 1)), ("bulk",), ("create:cogwheel", 8), 8, "pta_transition"),
+]
+
+
+def mek_quests() -> list[Quest]:
+    phase_tags = {
+        "I · ОСНОВА": "pta_main", "II · МАШИНЫ": "pta_main", "III · СЕТИ": "pta_resource",
+        "IV · ФАБРИКИ": "pta_auto", "V · ХИМИЯ": "pta_resource", "VI · АТОМ": "pta_danger",
+        "VII · ФИНАЛ": "pta_transition",
+    }
+    result = []
+    for n in old_mek.NODES:
+        key, title, phase, desc, x, y, shape, size, tasks, deps, reward, xp = n
+        result.append(Quest(key, title, phase, desc, round(float(x) * 0.55, 2), round(float(y) * 0.58, 2),
+                            shape, size, tuple(tasks), tuple(deps), reward, xp, phase_tags[phase], tasks[0][0]))
+    return result
+
+
+MEK = mek_quests()
+MILESTONES = {
+    "skyblock": {"start": 1, "sieve": 2, "cobble": 3, "ores": 4, "generator": 5, "autohammer": 6, "core": 7},
+    "mekanism": {"osmium": 1, "enrichment": 2, "cables": 3, "basicfactory": 4, "purification": 5, "wind": 6, "fusion": 7},
+}
+
+
+def make_quest(namespace: str, quest: Quest) -> str:
+    quest_id = old_mek.hid("quest", quest.key) if namespace == "mekanism" else hid(namespace, "quest", quest.key)
+    id_for = (lambda kind: old_mek.hid(kind, quest.key)) if namespace == "mekanism" else (lambda kind: hid(namespace, kind, quest.key))
+    lines = ["\t\t{"]
+    if quest.deps:
+        deps = [old_mek.hid("quest", d) if namespace == "mekanism" else hid(namespace, "quest", d) for d in quest.deps]
+        lines.append("\t\t\tdependencies: [" + ", ".join(q(d) for d in deps) + "]")
+    lines += [
+        f"\t\t\ticon: {{ id: {q(quest.icon or quest.tasks[0][0])} }}",
+        f"\t\t\tid: {q(quest_id)}",
+        "\t\t\trewards: [",
+        "\t\t\t\t{",
+        f"\t\t\t\t\tcount: {quest.reward[1]}",
+        f"\t\t\t\t\tid: {q(id_for('reward-item'))}",
+        f"\t\t\t\t\titem: {{ count: 1, id: {q(quest.reward[0])} }}",
+        "\t\t\t\t\ttype: \"item\"",
+        "\t\t\t\t}",
+        "\t\t\t\t{",
+        f"\t\t\t\t\tid: {q(id_for('reward-xp'))}",
+        "\t\t\t\t\ttype: \"xp_levels\"",
+        f"\t\t\t\t\txp_levels: {quest.xp}",
+        "\t\t\t\t}",
+        "\t\t\t]",
+        f"\t\t\tshape: {q(quest.shape)}",
+        f"\t\t\tsize: {quest.size:.2f}d",
+        f"\t\t\ttags: [{q(namespace)}, {q(quest.tag)}]",
+        "\t\t\ttasks: [",
+    ]
+    for index, (item_id, count) in enumerate(quest.tasks):
+        lines += [
+            "\t\t\t\t{",
+            f"\t\t\t\t\tid: {q(id_for(f'task-{index}'))}",
+            f"\t\t\t\t\titem: {{ count: {count}, id: {q(item_id)} }}",
+            "\t\t\t\t\ttype: \"item\"",
+            "\t\t\t\t}",
+        ]
+    lines += ["\t\t\t]", f"\t\t\tx: {quest.x:.2f}d", f"\t\t\ty: {quest.y:.2f}d", "\t\t}"]
+    return "\n".join(lines)
+
+
+def make_chapter(namespace: str, chapter_id: str, order: int, icon: str, quests: list[Quest], background: str) -> str:
+    xs = [x.x for x in quests]
+    ys = [x.y for x in quests]
+    min_x, max_x, min_y, max_y = min(xs), max(xs), min(ys), max(ys)
+    width, height = max_x - min_x + 4.0, max_y - min_y + 4.0
+    cx, cy = (min_x + max_x) / 2, (min_y + max_y) / 2
+    return "\n".join([
+        "{",
+        "\tdefault_hide_dependency_lines: false",
+        "\tdefault_min_width: 270",
+        "\tdefault_quest_shape: \"circle\"",
+        f"\tfilename: {q(namespace)}",
+        f"\tgroup: {q(GROUP_ID)}",
+        f"\ticon: {{ id: {q(icon)} }}",
+        f"\tid: {q(chapter_id)}",
+        "\timages: [{",
+        f"\t\theight: {height:.2f}d",
+        f"\t\timage: {q(background)}",
+        "\t\torder: -10",
+        "\t\trotation: 0.0d",
+        f"\t\twidth: {width:.2f}d",
+        f"\t\tx: {cx:.2f}d",
+        f"\t\ty: {cy:.2f}d",
+        "\t}]",
+        f"\torder_index: {order}",
+        "\tquest_links: [ ]",
+        "\tquests: [",
+        "\n".join(make_quest(namespace, quest) for quest in quests),
+        "\t]",
+        "}",
+        "",
+    ])
+
+
+def language_for(namespace: str, chapter_id: str, title: str, quests: list[Quest]) -> str:
+    lines = ["{", f"\tchapter.{chapter_id}.title: {q(title)}"]
+    for quest in quests:
+        quest_id = old_mek.hid("quest", quest.key) if namespace == "mekanism" else hid(namespace, "quest", quest.key)
+        lines.append(f"\tquest.{quest_id}.title: {q(quest.title)}")
+        lines.append(f"\tquest.{quest_id}.quest_subtitle: {q(quest.phase)}")
+        lines.append(f"\tquest.{quest_id}.quest_desc: [")
+        stage = MILESTONES[namespace].get(quest.key)
+        if stage:
+            lines.append(f"\t\t{q('{image:poketech:textures/quests/guides/' + namespace + '_' + str(stage) + '.png width:240 height:88 align:center}')}")
+            lines.append("\t\t\"\"")
+        lines += [
+            f"\t\t{q('&6&l' + quest.phase)}",
+            f"\t\t{q('&7' + quest.desc)}",
+            "\t\t\"\"",
+            f"\t\t{q('&9▶ Цель: &f' + ', '.join(str(c) + '× ' + i for i, c in quest.tasks))}",
+            f"\t\t{q('&2◆ Награда: &f' + str(quest.reward[1]) + '× ' + quest.reward[0] + ' и ' + str(quest.xp) + ' ур. опыта')}",
+            "\t]",
+        ]
+    lines.append("}")
+    return "\n".join(lines) + "\n"
+
+
+def merge_languages(*texts: str) -> str:
+    body = []
+    for text in texts:
+        body.extend(text.strip()[1:-1].strip().splitlines())
+    return "{\n" + "\n".join(body) + "\n}\n"
+
+
+def font(size: int, bold: bool = False):
+    name = "seguisb.ttf" if bold else "segoeui.ttf"
+    path = Path("C:/Windows/Fonts") / name
+    return ImageFont.truetype(str(path), size) if path.exists() else ImageFont.load_default()
+
+
+def make_tile(path: Path):
+    rng = random.Random(713)
+    image = Image.new("RGBA", (128, 128), (231, 224, 210, 255))
+    pixels = image.load()
+    for y in range(128):
+        for x in range(128):
+            noise = rng.randint(-5, 5)
+            pixels[x, y] = (231 + noise, 224 + noise, 210 + noise, 255)
+    draw = ImageDraw.Draw(image, "RGBA")
+    for _ in range(35):
+        x, y = rng.randrange(128), rng.randrange(128)
+        draw.line((x, y, x + rng.randrange(2, 12), y), fill=(102, 83, 56, rng.randrange(5, 15)))
+    path.parent.mkdir(parents=True, exist_ok=True)
+    image.save(path)
+
+
+def make_background(path: Path, title: str, stages: list[str], palette: list[tuple[int, int, int]], technical: bool):
+    image = Image.new("RGBA", (1800, 1100), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(image, "RGBA")
+    draw.rectangle((12, 12, 1788, 1088), outline=(109, 91, 66, 35), width=3)
+    draw.text((58, 42), title, font=font(42, True), fill=(70, 57, 39, 55))
+    draw.text((60, 94), "POKETECH ARCANA · КНИГА РАЗВИТИЯ", font=font(17), fill=(70, 57, 39, 48))
+    cell = 1680 / len(stages)
+    for i, stage in enumerate(stages):
+        x0 = 60 + i * cell
+        draw.rectangle((x0, 140, x0 + cell, 190), fill=(244, 238, 226, 115), outline=(100, 82, 57, 30), width=2)
+        draw.text((x0 + 12, 156), stage, font=font(14, True), fill=(103, 83, 56, 120))
+    for idx, color in enumerate(palette):
+        cx = 250 + idx * 430
+        cy = 410 if idx % 2 == 0 else 760
+        draw.ellipse((cx - 160, cy - 160, cx + 160, cy + 160), outline=(*color, 30), width=4)
+        draw.ellipse((cx - 125, cy - 125, cx + 125, cy + 125), outline=(*color, 18), width=18)
+    if technical:
+        for y in (350, 550, 750):
+            draw.line((80, y, 1720, y), fill=(39, 113, 139, 20), width=3)
+        for x in range(180, 1700, 260):
+            draw.rectangle((x, 850, x + 95, 945), outline=(123, 77, 149, 25), width=4)
+    else:
+        draw.arc((90, 300, 610, 850), 210, 510, fill=(71, 127, 69, 30), width=5)
+        draw.arc((1150, 260, 1730, 880), 20, 330, fill=(179, 100, 22, 28), width=5)
+        for x in range(160, 1700, 205):
+            draw.line((x, 930, x + 90, 840), fill=(71, 127, 69, 20), width=3)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    image.save(path)
+
+
+def make_guide(path: Path, title: str, subtitle: str, color: tuple[int, int, int], stage: int):
+    image = Image.new("RGBA", (720, 264), (238, 232, 220, 255))
+    draw = ImageDraw.Draw(image, "RGBA")
+    draw.rounded_rectangle((4, 4, 716, 260), radius=20, fill=(244, 239, 229, 255), outline=(*color, 150), width=5)
+    draw.rectangle((4, 4, 126, 260), fill=(*color, 30))
+    draw.ellipse((34, 76, 96, 138), outline=(*color, 210), width=6)
+    draw.ellipse((47, 89, 83, 125), fill=(*color, 40), outline=(*color, 150), width=3)
+    draw.text((39, 158), f"{stage:02d}", font=font(40, True), fill=(*color, 190))
+    draw.text((158, 55), title, font=font(32, True), fill=(55, 48, 39, 255))
+    draw.text((158, 110), subtitle, font=font(20), fill=(105, 91, 72, 255))
+    draw.line((158, 160, 660, 160), fill=(*color, 80), width=3)
+    for i in range(4):
+        x = 180 + i * 120
+        draw.ellipse((x, 187, x + 28, 215), fill=(246, 242, 233, 255), outline=(*color, 150), width=3)
+        if i < 3:
+            draw.line((x + 30, 201, x + 116, 201), fill=(*color, 80), width=3)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    image.save(path)
+
+
+def theme_text() -> str:
+    return """[*]
+background: poketech:textures/quests/ui/parchment_tile.png; tile_size=128
+chapter_panel_background: color:#F0E8DA; border=#B3A48E; border_round_edges=true
+key_reference_background: color:#E8E0D1; border=#B3A48E
+selected_chapter_highlight_1: #48B56718
+selected_chapter_highlight_2: #20B56718
+text_color: #2D2923
+hover_text_color: #8B4C13
+disabled_text_color: #8B806F
+widget_border: #B3A48E
+widget_background: #30FFFFFF
+button: color:#EEE7DA; border=#AD9F8B; border_round_edges=true
+panel: color:#EEE7DA; border=#AD9F8B
+disabled_button: color:#D8CFC0; border=#B9AE9E
+hover_button: color:#F7F1E7; border=#8B6B45; border_round_edges=true
+context_menu: color:#F4EEE3; border=#A99B87; border_round_edges=true
+scroll_bar_background: color:#D8CFC0
+scroll_bar: color:#A79780; border=#786B59
+quest_view_background: color:#F6F1E6; border=#A99B87; border_round_edges=true
+quest_view_border: #A99B87
+quest_view_title: #2D2923
+tasks_text_color: #247FA0
+rewards_text_color: #477F45
+quest_completed_color: #4F477F45
+quest_started_color: #FF247FA0
+quest_not_started_color: #FF736858
+quest_locked_color: #88736858
+dependency_line_completed_color: #70477F45
+dependency_line_uncompleted_color: #8A9B9284
+dependency_line_unavailable_color: #509B9284
+dependency_line_requires_color: #AA247FA0
+dependency_line_required_for_color: #AAB36416
+dependency_line_selected_speed: 0.5
+dependency_line_unselected_speed: 0.0
+dependency_line_thickness: 0.20
+quest_spacing: 1.0
+
+[#pta_main]
+quest_not_started_color: #FF247FA0
+quest_started_color: #FF247FA0
+
+[#pta_resource]
+quest_not_started_color: #FF477F45
+quest_started_color: #FF477F45
+
+[#pta_auto]
+quest_not_started_color: #FF7B4D95
+quest_started_color: #FF7B4D95
+
+[#pta_danger]
+quest_not_started_color: #FFA54F3B
+quest_started_color: #FFA54F3B
+
+[#pta_transition]
+quest_not_started_color: #FFB36416
+quest_started_color: #FFB36416
+"""
+
+
+def validate(quests: list[Quest], namespace: str):
+    if len(quests) != 50 or len({x.key for x in quests}) != 50:
+        raise ValueError(f"{namespace}: expected 50 unique quests, got {len(quests)}")
+    keys = {x.key for x in quests}
+    for quest in quests:
+        missing = set(quest.deps) - keys
+        if missing:
+            raise ValueError(f"{namespace}/{quest.key}: missing dependencies {missing}")
+    if namespace == "skyblock":
+        exd = {p.stem for p in (WORKSPACE / "skyblock-update" / "extract" / "exdeorum" / "assets" / "exdeorum" / "models" / "item").glob("*.json")}
+        exm = {p.stem for p in (WORKSPACE / "skyblock-update" / "extract" / "exmachinis" / "assets" / "exmachinis" / "models" / "item").glob("*.json")}
+        for quest in quests:
+            for item_id, _ in (*quest.tasks, quest.reward):
+                if item_id.startswith("exdeorum:") and item_id.split(":", 1)[1] not in exd:
+                    raise ValueError(f"Unknown Ex Deorum item {item_id}")
+                if item_id.startswith("exmachinis:") and item_id.split(":", 1)[1] not in exm:
+                    raise ValueError(f"Unknown Ex Machinis item {item_id}")
+
+
+def write_build():
+    validate(SKY, "skyblock")
+    validate(MEK, "mekanism")
+    if BUILD.exists():
+        shutil.rmtree(BUILD)
+    (QUESTS / "chapters").mkdir(parents=True)
+    (QUESTS / "lang").mkdir(parents=True)
+
+    data = """{
+\tdefault_autoclaim_rewards: "disabled"
+\tdefault_consume_items: false
+\tdefault_quest_disable_jei: false
+\tdefault_quest_shape: "circle"
+\tdefault_reward_team: false
+\tdetection_delay: 20
+\tdisable_gui: false
+\tdrop_book_on_death: false
+\tdrop_loot_crates: false
+\temergency_items_cooldown: 0
+\tfallback_locale: "ru_ru"
+\tgrid_scale: 0.5d
+\thide_excluded_quests: false
+\tlock_message: "&cСначала завершите предыдущий этап"
+\tloot_crate_no_drop: { boss: 0, monster: 600, passive: 4000 }
+\tpause_game: false
+\tprogression_mode: "linear"
+\tshow_lock_icons: true
+\tverify_on_load: false
+\tversion: 13
+}
+"""
+    groups = f'{{\n\tchapter_groups: [{{ icon: {{ id: "minecraft:book" }}, id: "{GROUP_ID}" }}]\n}}\n'
+    (QUESTS / "data.snbt").write_text(data, encoding="utf-8")
+    (QUESTS / "chapter_groups.snbt").write_text(groups, encoding="utf-8")
+    (QUESTS / "chapters" / "skyblock.snbt").write_text(make_chapter("skyblock", SKY_CHAPTER_ID, 0, "exdeorum:oak_sieve", SKY, "poketech:textures/quests/backgrounds/skyblock_book.png"), encoding="utf-8")
+    (QUESTS / "chapters" / "mekanism.snbt").write_text(make_chapter("mekanism", MEK_CHAPTER_ID, 1, "mekanism:metallurgic_infuser", MEK, "poketech:textures/quests/backgrounds/mekanism_book.png"), encoding="utf-8")
+
+    sky_lang = language_for("skyblock", SKY_CHAPTER_ID, "Skyblock: из пустоты к производству", SKY)
+    mek_lang = language_for("mekanism", MEK_CHAPTER_ID, "Mekanism: эра атома", MEK)
+    group_lang = "{\n\tchapter_group.%s.title: %s\n}\n" % (GROUP_ID, q("PokeTech Arcana · Книга развития"))
+    merged = merge_languages(group_lang, sky_lang, mek_lang)
+    for locale in ("ru_ru", "en_us"):
+        (QUESTS / "lang" / f"{locale}.snbt").write_text(merged, encoding="utf-8")
+        split = QUESTS / "lang" / locale
+        (split / "chapters").mkdir(parents=True)
+        (split / "chapter_group.snbt").write_text(group_lang, encoding="utf-8")
+        (split / "chapters" / "skyblock.snbt").write_text(sky_lang, encoding="utf-8")
+        (split / "chapters" / "mekanism.snbt").write_text(mek_lang, encoding="utf-8")
+
+    ftb_assets = ASSETS / "ftbquests"
+    ftb_assets.mkdir(parents=True)
+    (ftb_assets / "ftb_quests_theme.txt").write_text(theme_text(), encoding="utf-8")
+    tex = ASSETS / "poketech" / "textures" / "quests"
+    make_tile(tex / "ui" / "parchment_tile.png")
+    make_background(tex / "backgrounds" / "skyblock_book.png", "SKYBLOCK: ИЗ ПУСТОТЫ К ПРОИЗВОДСТВУ", ["I · ОСТРОВ", "II · СИТО", "III · КАМЕНЬ", "IV · РЕСУРСЫ", "V · МИРЫ", "VI · АВТО", "VII · ПЕРЕХОД"], [(71, 127, 69), (36, 127, 160), (123, 77, 149), (179, 100, 22)], False)
+    make_background(tex / "backgrounds" / "mekanism_book.png", "MEKANISM: ЭРА АТОМА", ["I · ОСНОВА", "II · МАШИНЫ", "III · СЕТИ", "IV · ФАБРИКИ", "V · ХИМИЯ", "VI · АТОМ", "VII · ФИНАЛ"], [(36, 127, 160), (71, 127, 69), (123, 77, 149), (165, 79, 59)], True)
+    palettes = [(36, 127, 160), (71, 127, 69), (123, 77, 149), (179, 100, 22), (71, 127, 69), (123, 77, 149), (179, 100, 22)]
+    for namespace, title in (("skyblock", "Skyblock"), ("mekanism", "Mekanism")):
+        names = (["Остров", "Просеивание", "Камень", "Ресурсы", "Измерения", "Автоматизация", "Переход"] if namespace == "skyblock" else ["Основа", "Машины", "Сети", "Фабрики", "Химия", "Атом", "Финал"])
+        for stage, (name, color) in enumerate(zip(names, palettes), 1):
+            make_guide(tex / "guides" / f"{namespace}_{stage}.png", f"{title} · {name}", "Схема этапа и ключевой производственный поток", color, stage)
+
+    client_quests = CLIENT_PACK / "config" / "ftbquests" / "quests"
+    if client_quests.exists():
+        shutil.rmtree(client_quests)
+    shutil.copytree(QUESTS, client_quests)
+    for rel in (Path("ftbquests"), Path("poketech") / "textures" / "quests"):
+        src, dst = ASSETS / rel, CLIENT_PACK / "kubejs" / "assets" / rel
+        if dst.exists():
+            shutil.rmtree(dst)
+        shutil.copytree(src, dst)
+
+    package = ROOT / "PokeTechArcana-quests-book-1.4.1.zip"
+    with zipfile.ZipFile(package, "w", zipfile.ZIP_DEFLATED) as archive:
+        for base in (BUILD / "config", BUILD / "kubejs"):
+            for path in base.rglob("*"):
+                if path.is_file():
+                    archive.write(path, path.relative_to(BUILD))
+    print(f"Built {len(SKY)} Skyblock + {len(MEK)} Mekanism quests")
+    print(f"Server package: {package} ({package.stat().st_size} bytes)")
+
+
+if __name__ == "__main__":
+    write_build()
