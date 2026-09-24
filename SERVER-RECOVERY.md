@@ -17,8 +17,11 @@
 ## Порядок восстановления
 
 1. Развернуть Minecraft 1.21.1 и NeoForge 21.1.250.
-2. Восстановить набор модов по `manifest.json` релиза `pack-v1.4.0`.
-3. Распаковать `PokeTechArcana-server-skyblock-1.4.0.zip` в корень сервера.
+2. Восстановить набор модов по `manifest.json` релиза `pack-v1.4.0`. Ex Deorum
+   и Ex Machinis скачиваются лаунчером напрямую с официального CDN CurseForge.
+3. Распаковать `PokeTechArcana-server-customizations-20260924.zip` в корень
+   сервера, затем положить `exdeorum-3.12.jar` и
+   `exmachinis-deorum-1.21.1-4.0.3.jar` в `mods/`.
 4. Запустить `INSTALL-STELLAR-BLUE.ps1`: скрипт скачает оригинальный Stellar
    Blue 1.5 с Modrinth, проверит SHA-1 и положит его в
    `moonlight-global-datapacks`.
