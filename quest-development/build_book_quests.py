@@ -13,6 +13,7 @@ from PIL import Image, ImageDraw, ImageFont
 import build_mekanism_quests as old_mek
 import build_create_quests as create_data
 import build_immersive_quests as immersive_data
+import build_three_chapters as next_chapters
 
 
 ROOT = Path(__file__).resolve().parent
@@ -29,7 +30,10 @@ SKY_CHAPTER_ID = "271C0B00CAFE2001"
 MEK_CHAPTER_ID = "1A2E2B8D9E0A2001"
 CREATE_CHAPTER_ID = "3C0EA7ECAFE3001"
 IMMERSIVE_CHAPTER_ID = "4E1E57ECAFE4001"
-PACKAGE_VERSION = "1.4.4"
+AE2_CHAPTER_ID = "5A2ECAFEAE2001"
+APPMEK_CHAPTER_ID = "5A2ECAFEAE2002"
+ARS_CHAPTER_ID = "5A2ECAFEA5001"
+PACKAGE_VERSION = "1.5.0"
 
 
 @dataclass(frozen=True)
@@ -170,11 +174,17 @@ def immersive_quests() -> list[Quest]:
 
 
 IMMERSIVE = immersive_quests()
+AE2 = next_chapters.build_chapter("ae2", Quest)
+APPMEK = next_chapters.build_chapter("appmek", Quest)
+ARS = next_chapters.build_chapter("ars", Quest)
 MILESTONES = {
     "skyblock": {"start": 1, "sieve": 2, "cobble": 3, "ores": 4, "generator": 5, "autohammer": 6, "core": 7},
     "mekanism": {"osmium": 1, "enrichment": 2, "cables": 3, "basicfactory": 4, "purification": 5, "wind": 6, "fusion": 7},
     "create": {"rotation": 1, "casing": 2, "belt": 3, "red_sheet": 4, "deployer": 5, "special_series": 6, "auto_factory": 7},
     "immersive": {"manual": 1, "cokeoven": 2, "blastfurnace": 3, "lv_network": 4, "current_transformer": 5, "metal_press": 6, "biodiesel": 7, "arc_furnace": 8, "industrial_complex": 9},
+    "ae2": {f"s{i:02d}_01": i for i in range(1, 10)},
+    "appmek": {f"s{i:02d}_01": i for i in range(1, 8)},
+    "ars": {f"s{i:02d}_01": i for i in range(1, 9)},
 }
 
 
@@ -341,6 +351,62 @@ def make_background(path: Path, title: str, stages: list[str], palette: list[tup
     image.save(path)
 
 
+def make_atlas_background(path: Path, title: str, namespace: str, quests: list[Quest],
+                          palette: list[tuple[int, int, int]]):
+    width_units, height_units, _, _ = chapter_geometry(quests)
+    min_x, max_x = min(q.x for q in quests) - 4, max(q.x for q in quests) + 4
+    min_y, max_y = min(q.y for q in quests) - 8, max(q.y for q in quests) + 4
+    image_w = 2048
+    image_h = max(960, round(image_w * height_units / width_units))
+    image = Image.new("RGBA", (image_w, image_h), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(image, "RGBA")
+    margin = 22
+    draw.rounded_rectangle((margin, margin, image_w - margin, image_h - margin), radius=24,
+                           fill=(246, 240, 228, 28), outline=(91, 71, 47, 125), width=5)
+    draw.text((64, 48), title, font=font(42, True), fill=(62, 48, 31, 215))
+    draw.text((66, 106), "POKETECH ARCANA · КАРТА ПРОГРЕССИИ", font=font(18, True), fill=(91, 70, 45, 165))
+
+    def point(x: float, y: float) -> tuple[float, float]:
+        return ((x - min_x) / (max_x - min_x) * image_w,
+                (y - min_y) / (max_y - min_y) * image_h)
+
+    centers = next_chapters.CHAPTERS[namespace]["centers"]
+    mapped = [point(x, y) for x, y in centers]
+    for index, ((x, y), stage) in enumerate(zip(mapped, next_chapters.CHAPTERS[namespace]["stages"])):
+        color = palette[index % len(palette)]
+        radius_x = max(62, image_w / (len(centers) * 2.7))
+        radius_y = max(70, image_h / 5.2)
+        draw.ellipse((x - radius_x, y - radius_y, x + radius_x, y + radius_y),
+                     fill=(*color, 12), outline=(*color, 75), width=3)
+        label = stage[1]
+        bbox = draw.textbbox((0, 0), label, font=font(15, True))
+        draw.rounded_rectangle((x - (bbox[2] - bbox[0]) / 2 - 10, y - radius_y + 8,
+                                x + (bbox[2] - bbox[0]) / 2 + 10, y - radius_y + 34),
+                               radius=9, fill=(246, 240, 228, 185))
+        draw.text((x - (bbox[2] - bbox[0]) / 2, y - radius_y + 12), label,
+                  font=font(15, True), fill=(*color, 205))
+    for index in range(len(mapped) - 1):
+        x1, y1 = mapped[index]
+        x2, y2 = mapped[index + 1]
+        color = palette[index % len(palette)]
+        if namespace == "appmek":
+            mid = (x1 + x2) / 2
+            draw.line((x1, y1, mid, y1, mid, y2, x2, y2), fill=(*color, 80), width=12, joint="curve")
+        else:
+            # A smooth-looking route assembled from short interpolated segments.
+            pts = []
+            for step in range(21):
+                t = step / 20
+                u = 1 - t
+                mx = (x1 + x2) / 2
+                px = u * u * u * x1 + 3 * u * u * t * mx + 3 * u * t * t * mx + t * t * t * x2
+                py = u * u * u * y1 + 3 * u * u * t * y1 + 3 * u * t * t * y2 + t * t * t * y2
+                pts.append((px, py))
+            draw.line(pts, fill=(*color, 80), width=12, joint="curve")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    image.save(path)
+
+
 def make_guide(path: Path, title: str, subtitle: str, color: tuple[int, int, int], stage: int):
     image = Image.new("RGBA", (720, 264), (238, 232, 220, 255))
     draw = ImageDraw.Draw(image, "RGBA")
@@ -453,6 +519,9 @@ def write_build():
     validate(MEK, "mekanism")
     validate(CREATE, "create")
     validate(IMMERSIVE, "immersive", 82)
+    validate(AE2, "ae2", 94)
+    validate(APPMEK, "appmek", 44)
+    validate(ARS, "ars", 70)
     if BUILD.exists():
         shutil.rmtree(BUILD)
     (QUESTS / "chapters").mkdir(parents=True)
@@ -488,34 +557,50 @@ def write_build():
     mek_title = "Mekanism: эра атома"
     create_title = "Create: фабрика покеболов"
     immersive_title = "Immersive Engineering: тяжёлая промышленность"
+    ae2_title = next_chapters.CHAPTERS["ae2"]["title"]
+    appmek_title = next_chapters.CHAPTERS["appmek"]["title"]
+    ars_title = next_chapters.CHAPTERS["ars"]["title"]
     (QUESTS / "chapters" / "skyblock.snbt").write_text(make_chapter("skyblock", SKY_CHAPTER_ID, sky_title, 0, "exdeorum:oak_sieve", SKY, "poketech:textures/quests/backgrounds/skyblock_book.png"), encoding="utf-8")
     (QUESTS / "chapters" / "create.snbt").write_text(make_chapter("create", CREATE_CHAPTER_ID, create_title, 1, "create:mechanical_press", CREATE, "poketech:textures/quests/backgrounds/create_book.png"), encoding="utf-8")
     (QUESTS / "chapters" / "immersive.snbt").write_text(make_chapter("immersive", IMMERSIVE_CHAPTER_ID, immersive_title, 2, "immersiveengineering:hammer", IMMERSIVE, "poketech:textures/quests/backgrounds/immersive_book.png"), encoding="utf-8")
     (QUESTS / "chapters" / "mekanism.snbt").write_text(make_chapter("mekanism", MEK_CHAPTER_ID, mek_title, 3, "mekanism:metallurgic_infuser", MEK, "poketech:textures/quests/backgrounds/mekanism_book.png"), encoding="utf-8")
+    (QUESTS / "chapters" / "ae2.snbt").write_text(make_chapter("ae2", AE2_CHAPTER_ID, ae2_title, 4, "ae2:controller", AE2, "poketech:textures/quests/backgrounds/ae2_book.png"), encoding="utf-8")
+    (QUESTS / "chapters" / "appmek.snbt").write_text(make_chapter("appmek", APPMEK_CHAPTER_ID, appmek_title, 5, "mekanism:chemical_tank", APPMEK, "poketech:textures/quests/backgrounds/appmek_book.png"), encoding="utf-8")
+    (QUESTS / "chapters" / "ars.snbt").write_text(make_chapter("ars", ARS_CHAPTER_ID, ars_title, 6, "ars_nouveau:archmage_spell_book", ARS, "poketech:textures/quests/backgrounds/ars_book.png"), encoding="utf-8")
 
     sky_lang = language_for("skyblock", SKY_CHAPTER_ID, sky_title, SKY)
     mek_lang = language_for("mekanism", MEK_CHAPTER_ID, mek_title, MEK)
     create_lang = language_for("create", CREATE_CHAPTER_ID, create_title, CREATE)
     immersive_lang = language_for("immersive", IMMERSIVE_CHAPTER_ID, immersive_title, IMMERSIVE)
+    ae2_lang = language_for("ae2", AE2_CHAPTER_ID, ae2_title, AE2)
+    appmek_lang = language_for("appmek", APPMEK_CHAPTER_ID, appmek_title, APPMEK)
+    ars_lang = language_for("ars", ARS_CHAPTER_ID, ars_title, ARS)
     group_lang = "{\n\tchapter_group.%s.title: %s\n}\n" % (GROUP_ID, q("PokeTech Arcana · Книга развития"))
-    merged = merge_languages(group_lang, sky_lang, create_lang, immersive_lang, mek_lang)
+    merged = merge_languages(group_lang, sky_lang, create_lang, immersive_lang, mek_lang, ae2_lang, appmek_lang, ars_lang)
     for locale in ("ru_ru", "en_us"):
         (QUESTS / "lang" / f"{locale}.snbt").write_text(merged, encoding="utf-8")
         split = QUESTS / "lang" / locale
         (split / "chapters").mkdir(parents=True)
         (split / "chapter_group.snbt").write_text(group_lang, encoding="utf-8")
-        chapter_lang = "{\n\tchapter.%s.title: %s\n\tchapter.%s.title: %s\n\tchapter.%s.title: %s\n\tchapter.%s.title: %s\n}\n" % (
-            SKY_CHAPTER_ID, q(sky_title), CREATE_CHAPTER_ID, q(create_title), IMMERSIVE_CHAPTER_ID, q(immersive_title), MEK_CHAPTER_ID, q(mek_title)
-        )
+        chapter_lang = "{\n" + "\n".join(f"\tchapter.{cid}.title: {q(title)}" for cid, title in (
+            (SKY_CHAPTER_ID, sky_title), (CREATE_CHAPTER_ID, create_title), (IMMERSIVE_CHAPTER_ID, immersive_title),
+            (MEK_CHAPTER_ID, mek_title), (AE2_CHAPTER_ID, ae2_title), (APPMEK_CHAPTER_ID, appmek_title), (ARS_CHAPTER_ID, ars_title)
+        )) + "\n}\n"
         (split / "chapter.snbt").write_text(chapter_lang, encoding="utf-8")
         sky_quest_lang = "{\n" + "\n".join(sky_lang.strip().splitlines()[2:-1]) + "\n}\n"
         mek_quest_lang = "{\n" + "\n".join(mek_lang.strip().splitlines()[2:-1]) + "\n}\n"
         create_quest_lang = "{\n" + "\n".join(create_lang.strip().splitlines()[2:-1]) + "\n}\n"
         immersive_quest_lang = "{\n" + "\n".join(immersive_lang.strip().splitlines()[2:-1]) + "\n}\n"
+        ae2_quest_lang = "{\n" + "\n".join(ae2_lang.strip().splitlines()[2:-1]) + "\n}\n"
+        appmek_quest_lang = "{\n" + "\n".join(appmek_lang.strip().splitlines()[2:-1]) + "\n}\n"
+        ars_quest_lang = "{\n" + "\n".join(ars_lang.strip().splitlines()[2:-1]) + "\n}\n"
         (split / "chapters" / "skyblock.snbt").write_text(sky_quest_lang, encoding="utf-8")
         (split / "chapters" / "mekanism.snbt").write_text(mek_quest_lang, encoding="utf-8")
         (split / "chapters" / "create.snbt").write_text(create_quest_lang, encoding="utf-8")
         (split / "chapters" / "immersive.snbt").write_text(immersive_quest_lang, encoding="utf-8")
+        (split / "chapters" / "ae2.snbt").write_text(ae2_quest_lang, encoding="utf-8")
+        (split / "chapters" / "appmek.snbt").write_text(appmek_quest_lang, encoding="utf-8")
+        (split / "chapters" / "ars.snbt").write_text(ars_quest_lang, encoding="utf-8")
 
     ftb_assets = ASSETS / "ftbquests"
     ftb_assets.mkdir(parents=True)
@@ -526,13 +611,19 @@ def write_build():
     make_background(tex / "backgrounds" / "mekanism_book.png", "MEKANISM: ЭРА АТОМА", ["I · ОСНОВА", "II · МАШИНЫ", "III · СЕТИ", "IV · ФАБРИКИ", "V · ХИМИЯ", "VI · АТОМ", "VII · ФИНАЛ"], [(36, 127, 160), (71, 127, 69), (123, 77, 149), (165, 79, 59)], MEK)
     make_background(tex / "backgrounds" / "create_book.png", "CREATE: ФАБРИКА ПОКЕБОЛОВ", ["I · КИНЕТИКА", "II · МЕХАНИЗМЫ", "III · КОНВЕЙЕР", "IV · ДЕТАЛИ", "V · СБОРКА", "VI · ОСОБЫЕ", "VII · ФАБРИКА"], [(187, 137, 45), (69, 126, 72), (35, 128, 143), (176, 70, 65), (122, 75, 148), (57, 111, 168), (140, 91, 47)], CREATE)
     make_background(tex / "backgrounds" / "immersive_book.png", "IMMERSIVE ENGINEERING: ТЯЖЁЛАЯ ПРОМЫШЛЕННОСТЬ", ["I · РУКОВОДСТВО", "II · МАТЕРИАЛЫ", "III · СТАЛЬ", "IV · ЭНЕРГИЯ LV", "V · ЭЛЕКТРОСЕТЬ", "VI · МАШИНЫ", "VII · ТОПЛИВО", "VIII · ТЯЖЁЛАЯ", "IX · ИНТЕГРАЦИЯ"], [(47, 127, 137), (118, 143, 69), (104, 118, 133), (188, 129, 38), (60, 131, 170), (154, 95, 53), (110, 142, 79), (162, 75, 62), (134, 88, 149)], IMMERSIVE)
+    make_atlas_background(tex / "backgrounds" / "ae2_book.png", "APPLIED ENERGISTICS 2: АРХИТЕКТУРА СЕТИ", "ae2", AE2, [(57, 127, 146), (91, 104, 157), (66, 135, 115), (175, 121, 54)])
+    make_atlas_background(tex / "backgrounds" / "appmek_book.png", "APPLIED MEKANISTICS: ЦИФРОВОЙ ХИМЗАВОД", "appmek", APPMEK, [(118, 84, 150), (52, 125, 120), (175, 107, 54), (94, 116, 147)])
+    make_atlas_background(tex / "backgrounds" / "ars_book.png", "ARS NOUVEAU: СОЗВЕЗДИЕ АРХИМАГА", "ars", ARS, [(118, 84, 154), (151, 105, 58), (75, 126, 155), (137, 83, 135)])
     palettes = [(36, 127, 160), (71, 127, 69), (123, 77, 149), (179, 100, 22), (71, 127, 69), (123, 77, 149), (179, 100, 22), (165, 79, 59), (57, 111, 168)]
-    for namespace, title in (("skyblock", "Skyblock"), ("mekanism", "Mekanism"), ("create", "Create"), ("immersive", "Immersive Engineering")):
+    for namespace, title in (("skyblock", "Skyblock"), ("mekanism", "Mekanism"), ("create", "Create"), ("immersive", "Immersive Engineering"), ("ae2", "Applied Energistics 2"), ("appmek", "Applied Mekanistics"), ("ars", "Ars Nouveau")):
         names = ({
             "skyblock": ["Остров", "Просеивание", "Камень", "Ресурсы", "Измерения", "Автоматизация", "Переход"],
             "mekanism": ["Основа", "Машины", "Сети", "Фабрики", "Химия", "Атом", "Финал"],
             "create": ["Кинетика", "Механизмы", "Конвейер", "Детали", "Сборка", "Особые серии", "Фабрика"],
             "immersive": ["Руководство", "Материалы", "Сталь", "Энергия LV", "Электросеть", "Машины", "Топливо", "Тяжёлая индустрия", "Интеграция"],
+            "ae2": next_chapters.stage_names("ae2"),
+            "appmek": next_chapters.stage_names("appmek"),
+            "ars": next_chapters.stage_names("ars"),
         }[namespace])
         for stage, (name, color) in enumerate(zip(names, palettes), 1):
             make_guide(tex / "guides" / f"{namespace}_{stage}.png", f"{title} · {name}", "Схема этапа и ключевой производственный поток", color, stage)
@@ -553,7 +644,7 @@ def write_build():
             for path in base.rglob("*"):
                 if path.is_file():
                     archive.write(path, path.relative_to(BUILD))
-    print(f"Built {len(SKY)} Skyblock + {len(CREATE)} Create + {len(IMMERSIVE)} Immersive Engineering + {len(MEK)} Mekanism quests")
+    print(f"Built {len(SKY)} Skyblock + {len(CREATE)} Create + {len(IMMERSIVE)} Immersive Engineering + {len(MEK)} Mekanism + {len(AE2)} AE2 + {len(APPMEK)} Applied Mekanistics + {len(ARS)} Ars Nouveau quests")
     print(f"Server package: {package} ({package.stat().st_size} bytes)")
 
 
