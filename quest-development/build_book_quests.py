@@ -19,9 +19,13 @@ BUILD = ROOT / "book-build"
 QUESTS = BUILD / "config" / "ftbquests" / "quests"
 ASSETS = BUILD / "kubejs" / "assets"
 CLIENT_PACK = WORKSPACE / "skyblock-update" / "pack"
-GROUP_ID = "A71C0B00CAFE1001"
-SKY_CHAPTER_ID = "A71C0B00CAFE2001"
-MEK_CHAPTER_ID = old_mek.CHAPTER_ID
+# FTB Quests 2101.1.27 parses IDs with Long.parseLong(..., 16), so the
+# highest bit must stay clear. IDs beginning with 8-F are silently replaced
+# at load time, which breaks translations and dependency references.
+GROUP_ID = "271C0B00CAFE1001"
+SKY_CHAPTER_ID = "271C0B00CAFE2001"
+MEK_CHAPTER_ID = "1A2E2B8D9E0A2001"
+PACKAGE_VERSION = "1.4.2"
 
 
 @dataclass(frozen=True)
@@ -43,7 +47,11 @@ class Quest:
 
 
 def hid(namespace: str, kind: str, key: str) -> str:
-    return hashlib.sha256(f"poketech-book-v1:{namespace}:{kind}:{key}".encode()).hexdigest()[:16].upper()
+    value = int(hashlib.sha256(f"poketech-book-v2:{namespace}:{kind}:{key}".encode()).hexdigest()[:16], 16)
+    value &= 0x7FFFFFFFFFFFFFFF
+    if value <= 1:
+        value += 2
+    return f"{value:016X}"
 
 
 def q(value: str) -> str:
@@ -141,11 +149,11 @@ MILESTONES = {
 
 
 def make_quest(namespace: str, quest: Quest) -> str:
-    quest_id = old_mek.hid("quest", quest.key) if namespace == "mekanism" else hid(namespace, "quest", quest.key)
-    id_for = (lambda kind: old_mek.hid(kind, quest.key)) if namespace == "mekanism" else (lambda kind: hid(namespace, kind, quest.key))
+    quest_id = hid(namespace, "quest", quest.key)
+    id_for = lambda kind: hid(namespace, kind, quest.key)
     lines = ["\t\t{"]
     if quest.deps:
-        deps = [old_mek.hid("quest", d) if namespace == "mekanism" else hid(namespace, "quest", d) for d in quest.deps]
+        deps = [hid(namespace, "quest", d) for d in quest.deps]
         lines.append("\t\t\tdependencies: [" + ", ".join(q(d) for d in deps) + "]")
     lines += [
         f"\t\t\ticon: {{ id: {q(quest.icon or quest.tasks[0][0])} }}",
@@ -180,12 +188,20 @@ def make_quest(namespace: str, quest: Quest) -> str:
     return "\n".join(lines)
 
 
-def make_chapter(namespace: str, chapter_id: str, order: int, icon: str, quests: list[Quest], background: str) -> str:
+def chapter_geometry(quests: list[Quest]) -> tuple[float, float, float, float]:
     xs = [x.x for x in quests]
     ys = [x.y for x in quests]
     min_x, max_x, min_y, max_y = min(xs), max(xs), min(ys), max(ys)
-    width, height = max_x - min_x + 4.0, max_y - min_y + 4.0
-    cx, cy = (min_x + max_x) / 2, (min_y + max_y) / 2
+    left_pad, right_pad, top_pad, bottom_pad = 4.0, 4.0, 8.0, 4.0
+    width = max_x - min_x + left_pad + right_pad
+    height = max_y - min_y + top_pad + bottom_pad
+    cx = (min_x + max_x + right_pad - left_pad) / 2
+    cy = (min_y + max_y + bottom_pad - top_pad) / 2
+    return width, height, cx, cy
+
+
+def make_chapter(namespace: str, chapter_id: str, title: str, order: int, icon: str, quests: list[Quest], background: str) -> str:
+    width, height, cx, cy = chapter_geometry(quests)
     return "\n".join([
         "{",
         "\tdefault_hide_dependency_lines: false",
@@ -195,6 +211,7 @@ def make_chapter(namespace: str, chapter_id: str, order: int, icon: str, quests:
         f"\tgroup: {q(GROUP_ID)}",
         f"\ticon: {{ id: {q(icon)} }}",
         f"\tid: {q(chapter_id)}",
+        f"\ttitle: {q(title)}",
         "\timages: [{",
         f"\t\theight: {height:.2f}d",
         f"\t\timage: {q(background)}",
@@ -217,7 +234,7 @@ def make_chapter(namespace: str, chapter_id: str, order: int, icon: str, quests:
 def language_for(namespace: str, chapter_id: str, title: str, quests: list[Quest]) -> str:
     lines = ["{", f"\tchapter.{chapter_id}.title: {q(title)}"]
     for quest in quests:
-        quest_id = old_mek.hid("quest", quest.key) if namespace == "mekanism" else hid(namespace, "quest", quest.key)
+        quest_id = hid(namespace, "quest", quest.key)
         lines.append(f"\tquest.{quest_id}.title: {q(quest.title)}")
         lines.append(f"\tquest.{quest_id}.quest_subtitle: {q(quest.phase)}")
         lines.append(f"\tquest.{quest_id}.quest_desc: [")
@@ -252,46 +269,44 @@ def font(size: int, bold: bool = False):
 
 def make_tile(path: Path):
     rng = random.Random(713)
-    image = Image.new("RGBA", (128, 128), (231, 224, 210, 255))
+    size = 512
+    image = Image.new("RGBA", (size, size), (232, 225, 212, 255))
     pixels = image.load()
-    for y in range(128):
-        for x in range(128):
-            noise = rng.randint(-5, 5)
-            pixels[x, y] = (231 + noise, 224 + noise, 210 + noise, 255)
-    draw = ImageDraw.Draw(image, "RGBA")
-    for _ in range(35):
-        x, y = rng.randrange(128), rng.randrange(128)
-        draw.line((x, y, x + rng.randrange(2, 12), y), fill=(102, 83, 56, rng.randrange(5, 15)))
+    for y in range(size):
+        for x in range(size):
+            noise = rng.choice((-2, -1, 0, 0, 0, 1, 2))
+            pixels[x, y] = (232 + noise, 225 + noise, 212 + noise, 255)
     path.parent.mkdir(parents=True, exist_ok=True)
     image.save(path)
 
 
-def make_background(path: Path, title: str, stages: list[str], palette: list[tuple[int, int, int]], technical: bool):
-    image = Image.new("RGBA", (1800, 1100), (0, 0, 0, 0))
+def make_background(path: Path, title: str, stages: list[str], palette: list[tuple[int, int, int]],
+                    quests: list[Quest]):
+    width_units, height_units, _, _ = chapter_geometry(quests)
+    image_w = 2048
+    image_h = max(1200, round(image_w * height_units / width_units))
+    image = Image.new("RGBA", (image_w, image_h), (0, 0, 0, 0))
     draw = ImageDraw.Draw(image, "RGBA")
-    draw.rectangle((12, 12, 1788, 1088), outline=(109, 91, 66, 35), width=3)
-    draw.text((58, 42), title, font=font(42, True), fill=(70, 57, 39, 55))
-    draw.text((60, 94), "POKETECH ARCANA · КНИГА РАЗВИТИЯ", font=font(17), fill=(70, 57, 39, 48))
-    cell = 1680 / len(stages)
+    margin = 22
+    draw.rounded_rectangle((margin, margin, image_w - margin, image_h - margin), radius=24,
+                           fill=(246, 240, 228, 24), outline=(91, 71, 47, 120), width=5)
+    draw.line((72, 174, image_w - 72, 174), fill=(111, 83, 51, 125), width=3)
+    draw.text((72, 54), title, font=font(50, True), fill=(62, 48, 31, 215))
+    draw.text((74, 122), "POKETECH ARCANA · КНИГА РАЗВИТИЯ", font=font(20, True), fill=(91, 70, 45, 165))
+    cell = (image_w - 144) / len(stages)
+    strip_top, strip_bottom = 206, 282
     for i, stage in enumerate(stages):
-        x0 = 60 + i * cell
-        draw.rectangle((x0, 140, x0 + cell, 190), fill=(244, 238, 226, 115), outline=(100, 82, 57, 30), width=2)
-        draw.text((x0 + 12, 156), stage, font=font(14, True), fill=(103, 83, 56, 120))
-    for idx, color in enumerate(palette):
-        cx = 250 + idx * 430
-        cy = 410 if idx % 2 == 0 else 760
-        draw.ellipse((cx - 160, cy - 160, cx + 160, cy + 160), outline=(*color, 30), width=4)
-        draw.ellipse((cx - 125, cy - 125, cx + 125, cy + 125), outline=(*color, 18), width=18)
-    if technical:
-        for y in (350, 550, 750):
-            draw.line((80, y, 1720, y), fill=(39, 113, 139, 20), width=3)
-        for x in range(180, 1700, 260):
-            draw.rectangle((x, 850, x + 95, 945), outline=(123, 77, 149, 25), width=4)
-    else:
-        draw.arc((90, 300, 610, 850), 210, 510, fill=(71, 127, 69, 30), width=5)
-        draw.arc((1150, 260, 1730, 880), 20, 330, fill=(179, 100, 22, 28), width=5)
-        for x in range(160, 1700, 205):
-            draw.line((x, 930, x + 90, 840), fill=(71, 127, 69, 20), width=3)
+        x0 = 72 + i * cell
+        color = palette[i % len(palette)]
+        draw.rectangle((x0, strip_top, x0 + cell, strip_bottom),
+                       fill=(248, 244, 236, 205), outline=(103, 82, 55, 105), width=2)
+        draw.rectangle((x0, strip_top, x0 + 8, strip_bottom), fill=(*color, 155))
+        draw.text((x0 + 20, strip_top + 26), stage, font=font(17, True), fill=(69, 54, 37, 220))
+        band_top = strip_bottom + 18
+        draw.rectangle((x0, band_top, x0 + cell, image_h - 54), fill=(*color, 10))
+        draw.line((x0 + cell / 2, band_top + 18, x0 + cell / 2, image_h - 72),
+                  fill=(*color, 24), width=2)
+    draw.line((72, strip_bottom + 1, image_w - 72, strip_bottom + 1), fill=(91, 71, 47, 95), width=3)
     path.parent.mkdir(parents=True, exist_ok=True)
     image.save(path)
 
@@ -318,7 +333,7 @@ def make_guide(path: Path, title: str, subtitle: str, color: tuple[int, int, int
 
 def theme_text() -> str:
     return """[*]
-background: poketech:textures/quests/ui/parchment_tile.png; tile_size=128
+background: poketech:textures/quests/ui/parchment_tile.png; tile_size=512
 chapter_panel_background: color:#F0E8DA; border=#B3A48E; border_round_edges=true
 key_reference_background: color:#E8E0D1; border=#B3A48E
 selected_chapter_highlight_1: #48B56718
@@ -344,14 +359,14 @@ quest_completed_color: #4F477F45
 quest_started_color: #FF247FA0
 quest_not_started_color: #FF736858
 quest_locked_color: #88736858
-dependency_line_completed_color: #70477F45
-dependency_line_uncompleted_color: #8A9B9284
-dependency_line_unavailable_color: #509B9284
-dependency_line_requires_color: #AA247FA0
-dependency_line_required_for_color: #AAB36416
+dependency_line_completed_color: #E0477F45
+dependency_line_uncompleted_color: #E06B6256
+dependency_line_unavailable_color: #B86B6256
+dependency_line_requires_color: #FF247FA0
+dependency_line_required_for_color: #FFB36416
 dependency_line_selected_speed: 0.5
 dependency_line_unselected_speed: 0.0
-dependency_line_thickness: 0.20
+dependency_line_thickness: 0.34
 quest_spacing: 1.0
 
 [#pta_main]
@@ -380,10 +395,18 @@ def validate(quests: list[Quest], namespace: str):
     if len(quests) != 50 or len({x.key for x in quests}) != 50:
         raise ValueError(f"{namespace}: expected 50 unique quests, got {len(quests)}")
     keys = {x.key for x in quests}
+    all_ids: set[str] = set()
     for quest in quests:
         missing = set(quest.deps) - keys
         if missing:
             raise ValueError(f"{namespace}/{quest.key}: missing dependencies {missing}")
+        for kind in ("quest", "task-0", "task-1", "reward-item", "reward-xp"):
+            object_id = hid(namespace, kind, quest.key)
+            if int(object_id, 16) > 0x7FFFFFFFFFFFFFFF:
+                raise ValueError(f"{namespace}/{quest.key}: signed-long unsafe ID {object_id}")
+            if object_id in all_ids:
+                raise ValueError(f"{namespace}/{quest.key}: duplicate ID {object_id}")
+            all_ids.add(object_id)
     if namespace == "skyblock":
         exd = {p.stem for p in (WORKSPACE / "skyblock-update" / "extract" / "exdeorum" / "assets" / "exdeorum" / "models" / "item").glob("*.json")}
         exm = {p.stem for p in (WORKSPACE / "skyblock-update" / "extract" / "exmachinis" / "assets" / "exmachinis" / "models" / "item").glob("*.json")}
@@ -426,14 +449,16 @@ def write_build():
 \tversion: 13
 }
 """
-    groups = f'{{\n\tchapter_groups: [{{ icon: {{ id: "minecraft:book" }}, id: "{GROUP_ID}" }}]\n}}\n'
+    groups = f'{{\n\tchapter_groups: [{{ icon: {{ id: "minecraft:book" }}, id: "{GROUP_ID}", title: "PokeTech Arcana · Книга развития" }}]\n}}\n'
     (QUESTS / "data.snbt").write_text(data, encoding="utf-8")
     (QUESTS / "chapter_groups.snbt").write_text(groups, encoding="utf-8")
-    (QUESTS / "chapters" / "skyblock.snbt").write_text(make_chapter("skyblock", SKY_CHAPTER_ID, 0, "exdeorum:oak_sieve", SKY, "poketech:textures/quests/backgrounds/skyblock_book.png"), encoding="utf-8")
-    (QUESTS / "chapters" / "mekanism.snbt").write_text(make_chapter("mekanism", MEK_CHAPTER_ID, 1, "mekanism:metallurgic_infuser", MEK, "poketech:textures/quests/backgrounds/mekanism_book.png"), encoding="utf-8")
+    sky_title = "Skyblock: из пустоты к производству"
+    mek_title = "Mekanism: эра атома"
+    (QUESTS / "chapters" / "skyblock.snbt").write_text(make_chapter("skyblock", SKY_CHAPTER_ID, sky_title, 0, "exdeorum:oak_sieve", SKY, "poketech:textures/quests/backgrounds/skyblock_book.png"), encoding="utf-8")
+    (QUESTS / "chapters" / "mekanism.snbt").write_text(make_chapter("mekanism", MEK_CHAPTER_ID, mek_title, 1, "mekanism:metallurgic_infuser", MEK, "poketech:textures/quests/backgrounds/mekanism_book.png"), encoding="utf-8")
 
-    sky_lang = language_for("skyblock", SKY_CHAPTER_ID, "Skyblock: из пустоты к производству", SKY)
-    mek_lang = language_for("mekanism", MEK_CHAPTER_ID, "Mekanism: эра атома", MEK)
+    sky_lang = language_for("skyblock", SKY_CHAPTER_ID, sky_title, SKY)
+    mek_lang = language_for("mekanism", MEK_CHAPTER_ID, mek_title, MEK)
     group_lang = "{\n\tchapter_group.%s.title: %s\n}\n" % (GROUP_ID, q("PokeTech Arcana · Книга развития"))
     merged = merge_languages(group_lang, sky_lang, mek_lang)
     for locale in ("ru_ru", "en_us"):
@@ -441,16 +466,22 @@ def write_build():
         split = QUESTS / "lang" / locale
         (split / "chapters").mkdir(parents=True)
         (split / "chapter_group.snbt").write_text(group_lang, encoding="utf-8")
-        (split / "chapters" / "skyblock.snbt").write_text(sky_lang, encoding="utf-8")
-        (split / "chapters" / "mekanism.snbt").write_text(mek_lang, encoding="utf-8")
+        chapter_lang = "{\n\tchapter.%s.title: %s\n\tchapter.%s.title: %s\n}\n" % (
+            SKY_CHAPTER_ID, q(sky_title), MEK_CHAPTER_ID, q(mek_title)
+        )
+        (split / "chapter.snbt").write_text(chapter_lang, encoding="utf-8")
+        sky_quest_lang = "{\n" + "\n".join(sky_lang.strip().splitlines()[2:-1]) + "\n}\n"
+        mek_quest_lang = "{\n" + "\n".join(mek_lang.strip().splitlines()[2:-1]) + "\n}\n"
+        (split / "chapters" / "skyblock.snbt").write_text(sky_quest_lang, encoding="utf-8")
+        (split / "chapters" / "mekanism.snbt").write_text(mek_quest_lang, encoding="utf-8")
 
     ftb_assets = ASSETS / "ftbquests"
     ftb_assets.mkdir(parents=True)
     (ftb_assets / "ftb_quests_theme.txt").write_text(theme_text(), encoding="utf-8")
     tex = ASSETS / "poketech" / "textures" / "quests"
     make_tile(tex / "ui" / "parchment_tile.png")
-    make_background(tex / "backgrounds" / "skyblock_book.png", "SKYBLOCK: ИЗ ПУСТОТЫ К ПРОИЗВОДСТВУ", ["I · ОСТРОВ", "II · СИТО", "III · КАМЕНЬ", "IV · РЕСУРСЫ", "V · МИРЫ", "VI · АВТО", "VII · ПЕРЕХОД"], [(71, 127, 69), (36, 127, 160), (123, 77, 149), (179, 100, 22)], False)
-    make_background(tex / "backgrounds" / "mekanism_book.png", "MEKANISM: ЭРА АТОМА", ["I · ОСНОВА", "II · МАШИНЫ", "III · СЕТИ", "IV · ФАБРИКИ", "V · ХИМИЯ", "VI · АТОМ", "VII · ФИНАЛ"], [(36, 127, 160), (71, 127, 69), (123, 77, 149), (165, 79, 59)], True)
+    make_background(tex / "backgrounds" / "skyblock_book.png", "SKYBLOCK: ИЗ ПУСТОТЫ К ПРОИЗВОДСТВУ", ["I · ОСТРОВ", "II · СИТО", "III · КАМЕНЬ", "IV · РЕСУРСЫ", "V · МИРЫ", "VI · АВТО", "VII · ПЕРЕХОД"], [(71, 127, 69), (36, 127, 160), (123, 77, 149), (179, 100, 22)], SKY)
+    make_background(tex / "backgrounds" / "mekanism_book.png", "MEKANISM: ЭРА АТОМА", ["I · ОСНОВА", "II · МАШИНЫ", "III · СЕТИ", "IV · ФАБРИКИ", "V · ХИМИЯ", "VI · АТОМ", "VII · ФИНАЛ"], [(36, 127, 160), (71, 127, 69), (123, 77, 149), (165, 79, 59)], MEK)
     palettes = [(36, 127, 160), (71, 127, 69), (123, 77, 149), (179, 100, 22), (71, 127, 69), (123, 77, 149), (179, 100, 22)]
     for namespace, title in (("skyblock", "Skyblock"), ("mekanism", "Mekanism")):
         names = (["Остров", "Просеивание", "Камень", "Ресурсы", "Измерения", "Автоматизация", "Переход"] if namespace == "skyblock" else ["Основа", "Машины", "Сети", "Фабрики", "Химия", "Атом", "Финал"])
@@ -467,7 +498,7 @@ def write_build():
             shutil.rmtree(dst)
         shutil.copytree(src, dst)
 
-    package = ROOT / "PokeTechArcana-quests-book-1.4.1.zip"
+    package = ROOT / f"PokeTechArcana-quests-book-{PACKAGE_VERSION}.zip"
     with zipfile.ZipFile(package, "w", zipfile.ZIP_DEFLATED) as archive:
         for base in (BUILD / "config", BUILD / "kubejs"):
             for path in base.rglob("*"):
