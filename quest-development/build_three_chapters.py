@@ -112,6 +112,56 @@ CHAPTERS = {
         "centers": [(0, 23), (14, 14), (28, 3), (42, 6), (56, 15), (70, 25), (84, 16), (98, 4)],
         "patterns": ["crescentR", "diamond", "ring", "stack", "star", "crescentL", "ritual", "doubleRing"],
     },
+    "irons": {
+        "title": "Iron's Spells: гримуар арканы",
+        "file": "irons",
+        "icon": "irons_spellbooks:scroll",
+        "stages": [
+            ("I · ГРИМУАР", "Первые страницы", ["Iron Spell Book", "Scroll Forge", "Магический свиток", "Руна огня", "Руна льда", "Руна света", "Руна тьмы", "Первое заклинание", "Запись в гримуар", "Печать ученика"]),
+            ("II · ИСТОЧНИК", "Эссенция и мана", ["Arcane Essence", "Mana Crystal", "Imbuement Altar", "Source Link", "Амулет маны", "Настой восстановления", "Свиток усиления", "Хранилище маны", "Стабильный источник", "Контроль расхода"]),
+            ("III · ШКОЛА ОГНЯ", "Пламя и разрушение", ["Fireball", "Burning Dash", "Fire Breath", "Flaming Strike", "Blaze Storm", "Flame Ward", "Кольцо пламени", "Огненный арсенал", "Испытание огнём", "Разряд пламени"]),
+            ("IV · ШКОЛА ЛЬДА", "Контроль и защита", ["Ice Block", "Frostwave", "Hailstorm", "Frost Step", "Icicle", "Cold Snap", "Ледяной барьер", "Морозная броня", "Испытание льдом", "Заморозка цели"]),
+            ("V · ШКОЛА СВЕТА", "Лечение и поддержка", ["Heal", "Greater Heal", "Holy Weapon", "Sunbeam", "Guiding Light", "Divine Smite", "Световой купол", "Групповое лечение", "Испытание света"]),
+            ("VI · РЕЛИКВИИ", "Артефакты мага", ["Mage Robes", "Magic Sword", "Spellbreaker", "Arcane Anvil", "Scroll Rack", "Ring of Protection", "Amulet of Concentration", "Реликвия школы", "Сборка арсенала"]),
+            ("VII · БАШНЯ", "Магическая оборона", ["Summoned Vex", "Summoned Hound", "Bookwyrm Familiar", "Casting Wand", "Magic Missile Turret", "Defensive Circle", "Страж башни", "Сигнал тревоги", "Оборона острова"]),
+            ("VIII · АРХИМАГ", "Финальные заклинания", ["Cataclysm", "Dragon Breath", "Lightning Lance", "Teleport", "Time Stop", "Blood Step", "Финальная печать", "Мастерский гримуар", "Арканная башня"]),
+        ],
+        "centers": [(0, 15), (14, 4), (28, 12), (42, 1), (56, 14), (70, 24), (84, 14), (98, 3)],
+        "patterns": ["crescentR", "ring", "star", "doubleFan", "diamond", "crescentL", "ritual", "doubleRing"],
+    },
+    "farmer": {
+        "title": "Farmer's Delight: сезоны острова",
+        "file": "farmer",
+        "icon": "farmersdelight:cooking_pot",
+        "stages": [
+            ("I · ПОЧВА", "Первая грядка", ["Rich Soil", "Organic Compost", "Tomato Seeds", "Cabbage Seeds", "Onion Seeds", "Rice", "Садовый нож", "Полив грядки", "Первый урожай", "Плодородная почва"]),
+            ("II · КУХНЯ", "Очаг и инструменты", ["Cooking Pot", "Skillet", "Cutting Board", "Cooking Knife", "Утварь кухни", "Костёр шефа", "Стол повара", "Запас топлива", "Первое блюдо", "Кухонный ритм"]),
+            ("III · ОВОЩИ", "Поля острова", ["Капуста", "Помидор", "Лук", "Рисовое поле", "Свёкла", "Морковь", "Картофель", "Смешанная грядка", "Большой урожай", "Семена следующего сезона"]),
+            ("IV · ЖИВОТНЫЕ", "Пастбище и загоны", ["Кормушка", "Сено", "Овчарня", "Куриный загон", "Коровник", "Корм для животных", "Переработка шерсти", "Стабильное стадо", "Амбар"]),
+            ("V · РЕЦЕПТЫ", "Кухня выживания", ["Vegetable Noodles", "Stuffed Pumpkin", "Bacon and Eggs", "Chicken Sandwich", "Beef Stew", "Cabbage Rolls", "Hearty Feast", "Блюдо с баффом", "Меню острова"]),
+            ("VI · КОНСЕРВАЦИЯ", "Хранение урожая", ["Стойка для сушки", "Бочка", "Солёные овощи", "Копчёное мясо", "Сушёные фрукты", "Ящик урожая", "Полка припасов", "Резерв на зиму", "Холодный склад"]),
+            ("VII · ХОЗЯЙСТВО", "Автоматизация фермы", ["Автосбор урожая", "Конвейер кухни", "Источник воды", "Сортировочный амбар", "Ротация культур", "Компостер", "Кухня покеболов", "Большая ферма"]),
+        ],
+        "centers": [(0, 12), (16, 2), (32, 20), (48, 3), (64, 14), (80, 4), (96, 15)],
+        "patterns": ["fanR", "ring", "crescentD", "grid", "star", "fanL", "doubleFan"],
+    },
+    "mystical": {
+        "title": "Mystical Agriculture: семена элементов",
+        "file": "mystical",
+        "icon": "mysticalagriculture:inferium_essence",
+        "stages": [
+            ("I · ЭССЕНЦИЯ", "Первые семена", ["Inferium Essence", "Inferium Seed", "Inferium Farmland", "Seed Reprocessor", "Фармерский кристалл", "Удобрение эссенцией", "Первая ферма", "Сбор урожая", "Ядро инфериума", "Проверка роста"]),
+            ("II · ПРОГРЕСС", "Prudentium и Terrestrial", ["Prudentium Essence", "Prudentium Seed", "Prudentium Farmland", "Tertium Essence", "Tertium Seed", "Tertium Farmland", "Prosperity Seed Base", "Seed Reprocessor II", "Улучшенное поле", "Стабильный урожай", "Переход на следующий тир"]),
+            ("III · МЕТАЛЛЫ", "Ресурсные семена", ["Iron Seed", "Coal Seed", "Copper Seed", "Gold Seed", "Redstone Seed", "Lapis Seed", "Quartz Seed", "Diamond Seed", "Emerald Seed", "Первый ресурсный кластер", "Склад ресурсов"]),
+            ("IV · МИРЫ", "Семена измерений", ["Nether Quartz Seed", "Glowstone Seed", "Obsidian Seed", "Enderium Seed", "Nether Star Seed", "Soulstone Seed", "Wither Skeleton Seed", "Измерительный урожай", "Семена опасных ресурсов"]),
+            ("V · АВТОФЕРМА", "Машины роста", ["Harvester", "Plant Sower", "Plant Gatherer", "Essence Hopper", "Mob Crusher", "Field Monitor", "Автополив", "Силовая ферма", "Цикл без игрока"]),
+            ("VI · УЛУЧШЕННЫЕ ПОЛЯ", "Глубокая эссенция", ["Imperium Essence", "Imperium Seed", "Imperium Farmland", "Supremium Essence", "Supremium Seed", "Supremium Farmland", "Мастерское удобрение", "Кристалл урожая", "Поля ускорения", "Золотой урожай"]),
+            ("VII · КРЕСТЬЯНСКАЯ СЕТЬ", "Интеграция производства", ["Автокрафт семян", "Склад эссенции", "Сортировка культур", "Резервный посеватель", "Связка с Farmer’s Delight", "Связка с Mekanism", "Контроль энергии", "Сеть ресурсов", "Фабрика эссенции"]),
+            ("VIII · ФИНАЛ", "Кристалл создателя", ["Nether Star Seed", "Dragon Egg Seed", "Awakened Supremium", "Master Infusion Crystal", "Ultimate Seed", "Кристаллическое поле", "Финальный урожай", "Мастерская острова", "Цель создателя"]),
+        ],
+        "centers": [(0, 23), (14, 15), (28, 7), (42, 2), (56, 9), (70, 22), (84, 26), (98, 14)],
+        "patterns": ["crescentR", "diamond", "ring", "star", "hex", "crescentL", "ritual", "doubleRing"],
+    },
 }
 
 
@@ -179,6 +229,47 @@ ITEMS = {
         ["forbidden_arcanus:arcane_crystal", "forbidden_arcanus:eternal_stella", "forbidden_arcanus:deorum_ingot", "forbidden_arcanus:obsidian_skull", "forbidden_arcanus:runic_stone", "forbidden_arcanus:divine_pact", "forbidden_arcanus:hephaestus_forge_tier_5", "forbidden_arcanus:eternal_stella", "forbidden_arcanus:black_quantum_catcher", "forbidden_arcanus:eternal_stella"],
     ],
 }
+
+
+def _generated_rows(pool: list[str], stage_counts: list[int]) -> list[list[str]]:
+    """Fill each educational stage with real registered items from its mod."""
+    return [[pool[(stage * 3 + index) % len(pool)] for index in range(count)] for stage, count in enumerate(stage_counts)]
+
+
+ITEMS["irons"] = _generated_rows([
+    "irons_spellbooks:scroll", "irons_spellbooks:inscription_table", "irons_spellbooks:arcane_anvil",
+    "irons_spellbooks:fire_rune", "irons_spellbooks:ice_staff", "irons_spellbooks:lightning_rod",
+    "irons_spellbooks:ender_rune", "irons_spellbooks:holy_rune", "irons_spellbooks:blood_rune",
+    "irons_spellbooks:nature_rune", "irons_spellbooks:magic_cloth", "irons_spellbooks:graybeard_staff",
+    "irons_spellbooks:cultist_helmet", "irons_spellbooks:upgrade_orb", "irons_spellbooks:legendary_ink",
+    "irons_spellbooks:mana_ring", "irons_spellbooks:icy_fang",
+], [11, 11, 11, 11, 10, 10, 10, 10])
+ITEMS["farmer"] = _generated_rows([
+    "farmersdelight:rich_soil", "farmersdelight:organic_compost", "farmersdelight:tomato_seeds",
+    "farmersdelight:tomato", "farmersdelight:cooking_pot", "farmersdelight:flint_knife",
+    "farmersdelight:stove", "farmersdelight:skillet", "farmersdelight:cooked_rice",
+    "farmersdelight:onion", "farmersdelight:bacon_and_eggs", "farmersdelight:chicken_cuts",
+    "minecraft:rabbit_stew", "farmersdelight:minced_beef", "farmersdelight:vegetable_soup",
+    "farmersdelight:beef_stew", "farmersdelight:bone_broth", "farmersdelight:baked_cod_stew",
+    "farmersdelight:rice", "farmersdelight:raw_pasta", "farmersdelight:mixed_salad",
+    "farmersdelight:roast_chicken", "farmersdelight:honey_glazed_ham", "farmersdelight:sweet_berry_cheesecake",
+    "farmersdelight:rice_roll_medley_block", "minecraft:golden_apple", "farmersdelight:hot_cocoa",
+    "farmersdelight:apple_cider", "farmersdelight:glow_berry_custard", "farmersdelight:melon_juice",
+    "farmersdelight:dog_food", "farmersdelight:hamburger", "minecraft:beef",
+], [11, 11, 11, 10, 10, 10, 9])
+ITEMS["mystical"] = _generated_rows([
+    "mysticalagriculture:prosperity_shard", "mysticalagriculture:inferium_essence",
+    "mysticalagriculture:infusion_crystal", "mysticalagriculture:soulium_dagger",
+    "mysticalagriculture:supremium_essence", "mysticalagriculture:prudentium_essence",
+    "mysticalagriculture:tertium_essence", "mysticalagriculture:imperium_essence",
+    "mysticalagriculture:seed_reprocessor", "mysticalagriculture:coal_essence",
+    "mysticalagriculture:diamond_seeds", "mysticalagriculture:netherite_seeds",
+    "mysticalagriculture:blaze_essence", "mysticalagradditions:dragon_egg_crux",
+    "mysticalagriculture:tinkering_table", "mysticalagriculture:mining_aoe_i_augment",
+    "mysticalagriculture:prudentium_growth_accelerator", "mysticalagriculture:watering_can",
+    "mysticalagriculture:harvester", "mysticalagradditions:insanium_essence",
+    "mysticalagriculture:awakened_supremium_hoe", "mysticalagriculture:inferium_seeds",
+], [11, 12, 12, 10, 10, 11, 10, 10])
 
 
 def _pool(filename: str) -> list[str]:

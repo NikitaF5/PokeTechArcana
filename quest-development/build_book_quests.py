@@ -36,7 +36,10 @@ ARS_CHAPTER_ID = "5A2ECAFEA5001"
 OCCULT_CHAPTER_ID = "5A2ECAFE0CC001"
 EVIL_CHAPTER_ID = "5A2ECAFE0E001"
 FNA_CHAPTER_ID = "5A2ECAFE0F001"
-PACKAGE_VERSION = "1.6.0"
+IRONS_CHAPTER_ID = "5A2ECAFE10001"
+FARMER_CHAPTER_ID = "5A2ECAFE10002"
+MYSTICAL_CHAPTER_ID = "5A2ECAFE10003"
+PACKAGE_VERSION = "1.7.0"
 
 
 @dataclass(frozen=True)
@@ -183,6 +186,9 @@ ARS = next_chapters.build_chapter("ars", Quest)
 OCCULT = next_chapters.build_chapter("occult", Quest)
 EVIL = next_chapters.build_chapter("evil", Quest)
 FNA = next_chapters.build_chapter("fna", Quest)
+IRONS = next_chapters.build_chapter("irons", Quest)
+FARMER = next_chapters.build_chapter("farmer", Quest)
+MYSTICAL = next_chapters.build_chapter("mystical", Quest)
 MILESTONES = {
     "skyblock": {"start": 1, "sieve": 2, "cobble": 3, "ores": 4, "generator": 5, "autohammer": 6, "core": 7},
     "mekanism": {"osmium": 1, "enrichment": 2, "cables": 3, "basicfactory": 4, "purification": 5, "wind": 6, "fusion": 7},
@@ -194,6 +200,9 @@ MILESTONES = {
     "occult": {f"s{i:02d}_01": i for i in range(1, 10)},
     "evil": {f"s{i:02d}_01": i for i in range(1, 8)},
     "fna": {f"s{i:02d}_01": i for i in range(1, 9)},
+    "irons": {f"s{i:02d}_01": i for i in range(1, 9)},
+    "farmer": {f"s{i:02d}_01": i for i in range(1, 8)},
+    "mystical": {f"s{i:02d}_01": i for i in range(1, 9)},
 }
 
 
@@ -534,6 +543,9 @@ def write_build():
     validate(OCCULT, "occult", 89)
     validate(EVIL, "evil", 65)
     validate(FNA, "fna", 77)
+    validate(IRONS, "irons", 84)
+    validate(FARMER, "farmer", 72)
+    validate(MYSTICAL, "mystical", 86)
     if BUILD.exists():
         shutil.rmtree(BUILD)
     (QUESTS / "chapters").mkdir(parents=True)
@@ -575,6 +587,9 @@ def write_build():
     occult_title = next_chapters.CHAPTERS["occult"]["title"]
     evil_title = next_chapters.CHAPTERS["evil"]["title"]
     fna_title = next_chapters.CHAPTERS["fna"]["title"]
+    irons_title = next_chapters.CHAPTERS["irons"]["title"]
+    farmer_title = next_chapters.CHAPTERS["farmer"]["title"]
+    mystical_title = next_chapters.CHAPTERS["mystical"]["title"]
     (QUESTS / "chapters" / "skyblock.snbt").write_text(make_chapter("skyblock", SKY_CHAPTER_ID, sky_title, 0, "exdeorum:oak_sieve", SKY, "poketech:textures/quests/backgrounds/skyblock_book.png"), encoding="utf-8")
     (QUESTS / "chapters" / "create.snbt").write_text(make_chapter("create", CREATE_CHAPTER_ID, create_title, 1, "create:mechanical_press", CREATE, "poketech:textures/quests/backgrounds/create_book.png"), encoding="utf-8")
     (QUESTS / "chapters" / "immersive.snbt").write_text(make_chapter("immersive", IMMERSIVE_CHAPTER_ID, immersive_title, 2, "immersiveengineering:hammer", IMMERSIVE, "poketech:textures/quests/backgrounds/immersive_book.png"), encoding="utf-8")
@@ -585,6 +600,9 @@ def write_build():
     (QUESTS / "chapters" / "occult.snbt").write_text(make_chapter("occult", OCCULT_CHAPTER_ID, occult_title, 7, "occultism:dictionary_of_spirits", OCCULT, "poketech:textures/quests/backgrounds/occult_book.png"), encoding="utf-8")
     (QUESTS / "chapters" / "evil.snbt").write_text(make_chapter("evil", EVIL_CHAPTER_ID, evil_title, 8, "evilcraft:dark_gem", EVIL, "poketech:textures/quests/backgrounds/evil_book.png"), encoding="utf-8")
     (QUESTS / "chapters" / "fna.snbt").write_text(make_chapter("fna", FNA_CHAPTER_ID, fna_title, 9, "forbidden_arcanus:arcane_crystal", FNA, "poketech:textures/quests/backgrounds/fna_book.png"), encoding="utf-8")
+    (QUESTS / "chapters" / "irons.snbt").write_text(make_chapter("irons", IRONS_CHAPTER_ID, irons_title, 10, "irons_spellbooks:scroll", IRONS, "poketech:textures/quests/backgrounds/irons_book.png"), encoding="utf-8")
+    (QUESTS / "chapters" / "farmer.snbt").write_text(make_chapter("farmer", FARMER_CHAPTER_ID, farmer_title, 11, "farmersdelight:cooking_pot", FARMER, "poketech:textures/quests/backgrounds/farmer_book.png"), encoding="utf-8")
+    (QUESTS / "chapters" / "mystical.snbt").write_text(make_chapter("mystical", MYSTICAL_CHAPTER_ID, mystical_title, 12, "mysticalagriculture:inferium_essence", MYSTICAL, "poketech:textures/quests/backgrounds/mystical_book.png"), encoding="utf-8")
 
     sky_lang = language_for("skyblock", SKY_CHAPTER_ID, sky_title, SKY)
     mek_lang = language_for("mekanism", MEK_CHAPTER_ID, mek_title, MEK)
@@ -596,8 +614,11 @@ def write_build():
     occult_lang = language_for("occult", OCCULT_CHAPTER_ID, occult_title, OCCULT)
     evil_lang = language_for("evil", EVIL_CHAPTER_ID, evil_title, EVIL)
     fna_lang = language_for("fna", FNA_CHAPTER_ID, fna_title, FNA)
+    irons_lang = language_for("irons", IRONS_CHAPTER_ID, irons_title, IRONS)
+    farmer_lang = language_for("farmer", FARMER_CHAPTER_ID, farmer_title, FARMER)
+    mystical_lang = language_for("mystical", MYSTICAL_CHAPTER_ID, mystical_title, MYSTICAL)
     group_lang = "{\n\tchapter_group.%s.title: %s\n}\n" % (GROUP_ID, q("PokeTech Arcana · Книга развития"))
-    merged = merge_languages(group_lang, sky_lang, create_lang, immersive_lang, mek_lang, ae2_lang, appmek_lang, ars_lang, occult_lang, evil_lang, fna_lang)
+    merged = merge_languages(group_lang, sky_lang, create_lang, immersive_lang, mek_lang, ae2_lang, appmek_lang, ars_lang, occult_lang, evil_lang, fna_lang, irons_lang, farmer_lang, mystical_lang)
     for locale in ("ru_ru", "en_us"):
         (QUESTS / "lang" / f"{locale}.snbt").write_text(merged, encoding="utf-8")
         split = QUESTS / "lang" / locale
@@ -606,7 +627,8 @@ def write_build():
         chapter_lang = "{\n" + "\n".join(f"\tchapter.{cid}.title: {q(title)}" for cid, title in (
             (SKY_CHAPTER_ID, sky_title), (CREATE_CHAPTER_ID, create_title), (IMMERSIVE_CHAPTER_ID, immersive_title),
             (MEK_CHAPTER_ID, mek_title), (AE2_CHAPTER_ID, ae2_title), (APPMEK_CHAPTER_ID, appmek_title), (ARS_CHAPTER_ID, ars_title),
-            (OCCULT_CHAPTER_ID, occult_title), (EVIL_CHAPTER_ID, evil_title), (FNA_CHAPTER_ID, fna_title)
+            (OCCULT_CHAPTER_ID, occult_title), (EVIL_CHAPTER_ID, evil_title), (FNA_CHAPTER_ID, fna_title),
+            (IRONS_CHAPTER_ID, irons_title), (FARMER_CHAPTER_ID, farmer_title), (MYSTICAL_CHAPTER_ID, mystical_title)
         )) + "\n}\n"
         (split / "chapter.snbt").write_text(chapter_lang, encoding="utf-8")
         sky_quest_lang = "{\n" + "\n".join(sky_lang.strip().splitlines()[2:-1]) + "\n}\n"
@@ -619,6 +641,9 @@ def write_build():
         occult_quest_lang = "{\n" + "\n".join(occult_lang.strip().splitlines()[2:-1]) + "\n}\n"
         evil_quest_lang = "{\n" + "\n".join(evil_lang.strip().splitlines()[2:-1]) + "\n}\n"
         fna_quest_lang = "{\n" + "\n".join(fna_lang.strip().splitlines()[2:-1]) + "\n}\n"
+        irons_quest_lang = "{\n" + "\n".join(irons_lang.strip().splitlines()[2:-1]) + "\n}\n"
+        farmer_quest_lang = "{\n" + "\n".join(farmer_lang.strip().splitlines()[2:-1]) + "\n}\n"
+        mystical_quest_lang = "{\n" + "\n".join(mystical_lang.strip().splitlines()[2:-1]) + "\n}\n"
         (split / "chapters" / "skyblock.snbt").write_text(sky_quest_lang, encoding="utf-8")
         (split / "chapters" / "mekanism.snbt").write_text(mek_quest_lang, encoding="utf-8")
         (split / "chapters" / "create.snbt").write_text(create_quest_lang, encoding="utf-8")
@@ -629,6 +654,9 @@ def write_build():
         (split / "chapters" / "occult.snbt").write_text(occult_quest_lang, encoding="utf-8")
         (split / "chapters" / "evil.snbt").write_text(evil_quest_lang, encoding="utf-8")
         (split / "chapters" / "fna.snbt").write_text(fna_quest_lang, encoding="utf-8")
+        (split / "chapters" / "irons.snbt").write_text(irons_quest_lang, encoding="utf-8")
+        (split / "chapters" / "farmer.snbt").write_text(farmer_quest_lang, encoding="utf-8")
+        (split / "chapters" / "mystical.snbt").write_text(mystical_quest_lang, encoding="utf-8")
 
     ftb_assets = ASSETS / "ftbquests"
     ftb_assets.mkdir(parents=True)
@@ -645,8 +673,11 @@ def write_build():
     make_atlas_background(tex / "backgrounds" / "occult_book.png", "OCCULTISM: КРУГИ И ДУХИ", "occult", OCCULT, [(139, 90, 158), (182, 123, 57), (91, 77, 139), (78, 123, 126)])
     make_atlas_background(tex / "backgrounds" / "evil_book.png", "EVILCRAFT: ЭНЕРГИЯ ЖИЗНИ", "evil", EVIL, [(163, 79, 87), (94, 120, 150), (121, 63, 74), (183, 116, 58)])
     make_atlas_background(tex / "backgrounds" / "fna_book.png", "FORBIDDEN & ARCANUS: ЗАПРЕТНЫЕ РЕЛИКВИИ", "fna", FNA, [(61, 122, 114), (176, 131, 69), (77, 103, 145), (135, 78, 120)])
-    palettes = [(36, 127, 160), (71, 127, 69), (123, 77, 149), (179, 100, 22), (71, 127, 69), (123, 77, 149), (179, 100, 22), (165, 79, 59), (57, 111, 168), (139, 90, 158), (163, 79, 87), (61, 122, 114)]
-    for namespace, title in (("skyblock", "Skyblock"), ("mekanism", "Mekanism"), ("create", "Create"), ("immersive", "Immersive Engineering"), ("ae2", "Applied Energistics 2"), ("appmek", "Applied Mekanistics"), ("ars", "Ars Nouveau"), ("occult", "Occultism"), ("evil", "EvilCraft"), ("fna", "Forbidden & Arcanus")):
+    make_atlas_background(tex / "backgrounds" / "irons_book.png", "IRON'S SPELLS: ГРИМУАР АРКАНЫ", "irons", IRONS, [(118, 87, 168), (189, 138, 73), (85, 117, 159), (145, 79, 129)])
+    make_atlas_background(tex / "backgrounds" / "farmer_book.png", "FARMER'S DELIGHT: СЕЗОНЫ ОСТРОВА", "farmer", FARMER, [(178, 111, 61), (111, 153, 88), (192, 146, 66), (81, 132, 95)])
+    make_atlas_background(tex / "backgrounds" / "mystical_book.png", "MYSTICAL AGRICULTURE: СЕМЕНА ЭЛЕМЕНТОВ", "mystical", MYSTICAL, [(77, 131, 166), (165, 110, 72), (91, 108, 160), (115, 78, 145)])
+    palettes = [(36, 127, 160), (71, 127, 69), (123, 77, 149), (179, 100, 22), (71, 127, 69), (123, 77, 149), (179, 100, 22), (165, 79, 59), (57, 111, 168), (139, 90, 158), (163, 79, 87), (61, 122, 114), (118, 87, 168), (178, 111, 61), (77, 131, 166)]
+    for namespace, title in (("skyblock", "Skyblock"), ("mekanism", "Mekanism"), ("create", "Create"), ("immersive", "Immersive Engineering"), ("ae2", "Applied Energistics 2"), ("appmek", "Applied Mekanistics"), ("ars", "Ars Nouveau"), ("occult", "Occultism"), ("evil", "EvilCraft"), ("fna", "Forbidden & Arcanus"), ("irons", "Iron's Spells"), ("farmer", "Farmer's Delight"), ("mystical", "Mystical Agriculture")):
         names = ({
             "skyblock": ["Остров", "Просеивание", "Камень", "Ресурсы", "Измерения", "Автоматизация", "Переход"],
             "mekanism": ["Основа", "Машины", "Сети", "Фабрики", "Химия", "Атом", "Финал"],
@@ -658,6 +689,9 @@ def write_build():
             "occult": next_chapters.stage_names("occult"),
             "evil": next_chapters.stage_names("evil"),
             "fna": next_chapters.stage_names("fna"),
+            "irons": next_chapters.stage_names("irons"),
+            "farmer": next_chapters.stage_names("farmer"),
+            "mystical": next_chapters.stage_names("mystical"),
         }[namespace])
         for stage, (name, color) in enumerate(zip(names, palettes), 1):
             make_guide(tex / "guides" / f"{namespace}_{stage}.png", f"{title} · {name}", "Схема этапа и ключевой производственный поток", color, stage)
@@ -678,7 +712,7 @@ def write_build():
             for path in base.rglob("*"):
                 if path.is_file():
                     archive.write(path, path.relative_to(BUILD))
-    print(f"Built {len(SKY)} Skyblock + {len(CREATE)} Create + {len(IMMERSIVE)} Immersive Engineering + {len(MEK)} Mekanism + {len(AE2)} AE2 + {len(APPMEK)} Applied Mekanistics + {len(ARS)} Ars Nouveau + {len(OCCULT)} Occultism + {len(EVIL)} EvilCraft + {len(FNA)} Forbidden & Arcanus quests")
+    print(f"Built {len(SKY)} Skyblock + {len(CREATE)} Create + {len(IMMERSIVE)} Immersive Engineering + {len(MEK)} Mekanism + {len(AE2)} AE2 + {len(APPMEK)} Applied Mekanistics + {len(ARS)} Ars Nouveau + {len(OCCULT)} Occultism + {len(EVIL)} EvilCraft + {len(FNA)} Forbidden & Arcanus + {len(IRONS)} Iron's Spells + {len(FARMER)} Farmer's Delight + {len(MYSTICAL)} Mystical Agriculture quests")
     print(f"Server package: {package} ({package.stat().st_size} bytes)")
 
 
