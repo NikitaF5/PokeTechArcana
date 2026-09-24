@@ -12,6 +12,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 import build_mekanism_quests as old_mek
 import build_create_quests as create_data
+import build_immersive_quests as immersive_data
 
 
 ROOT = Path(__file__).resolve().parent
@@ -27,7 +28,8 @@ GROUP_ID = "271C0B00CAFE1001"
 SKY_CHAPTER_ID = "271C0B00CAFE2001"
 MEK_CHAPTER_ID = "1A2E2B8D9E0A2001"
 CREATE_CHAPTER_ID = "3C0EA7ECAFE3001"
-PACKAGE_VERSION = "1.4.3"
+IMMERSIVE_CHAPTER_ID = "4E1E57ECAFE4001"
+PACKAGE_VERSION = "1.4.4"
 
 
 @dataclass(frozen=True)
@@ -156,10 +158,23 @@ def create_quests() -> list[Quest]:
 
 
 CREATE = create_quests()
+
+
+def immersive_quests() -> list[Quest]:
+    result = []
+    for node in immersive_data.NODES:
+        key, title, phase, desc, x, y, shape, size, tasks, deps, reward, xp, tag, icon = node
+        result.append(Quest(key, title, phase, desc, float(x), float(y), shape, size,
+                            tuple(tasks), tuple(deps), reward, xp, tag, icon or tasks[0][0]))
+    return result
+
+
+IMMERSIVE = immersive_quests()
 MILESTONES = {
     "skyblock": {"start": 1, "sieve": 2, "cobble": 3, "ores": 4, "generator": 5, "autohammer": 6, "core": 7},
     "mekanism": {"osmium": 1, "enrichment": 2, "cables": 3, "basicfactory": 4, "purification": 5, "wind": 6, "fusion": 7},
     "create": {"rotation": 1, "casing": 2, "belt": 3, "red_sheet": 4, "deployer": 5, "special_series": 6, "auto_factory": 7},
+    "immersive": {"manual": 1, "cokeoven": 2, "blastfurnace": 3, "lv_network": 4, "current_transformer": 5, "metal_press": 6, "biodiesel": 7, "arc_furnace": 8, "industrial_complex": 9},
 }
 
 
@@ -406,16 +421,16 @@ quest_started_color: #FFB36416
 """
 
 
-def validate(quests: list[Quest], namespace: str):
-    if len(quests) != 50 or len({x.key for x in quests}) != 50:
-        raise ValueError(f"{namespace}: expected 50 unique quests, got {len(quests)}")
+def validate(quests: list[Quest], namespace: str, expected: int = 50):
+    if len(quests) != expected or len({x.key for x in quests}) != expected:
+        raise ValueError(f"{namespace}: expected {expected} unique quests, got {len(quests)}")
     keys = {x.key for x in quests}
     all_ids: set[str] = set()
     for quest in quests:
         missing = set(quest.deps) - keys
         if missing:
             raise ValueError(f"{namespace}/{quest.key}: missing dependencies {missing}")
-        for kind in ("quest", "task-0", "task-1", "reward-item", "reward-xp"):
+        for kind in ("quest", *(f"task-{index}" for index in range(len(quest.tasks))), "reward-item", "reward-xp"):
             object_id = hid(namespace, kind, quest.key)
             if int(object_id, 16) > 0x7FFFFFFFFFFFFFFF:
                 raise ValueError(f"{namespace}/{quest.key}: signed-long unsafe ID {object_id}")
@@ -437,6 +452,7 @@ def write_build():
     validate(SKY, "skyblock")
     validate(MEK, "mekanism")
     validate(CREATE, "create")
+    validate(IMMERSIVE, "immersive", 82)
     if BUILD.exists():
         shutil.rmtree(BUILD)
     (QUESTS / "chapters").mkdir(parents=True)
@@ -471,30 +487,35 @@ def write_build():
     sky_title = "Skyblock: из пустоты к производству"
     mek_title = "Mekanism: эра атома"
     create_title = "Create: фабрика покеболов"
+    immersive_title = "Immersive Engineering: тяжёлая промышленность"
     (QUESTS / "chapters" / "skyblock.snbt").write_text(make_chapter("skyblock", SKY_CHAPTER_ID, sky_title, 0, "exdeorum:oak_sieve", SKY, "poketech:textures/quests/backgrounds/skyblock_book.png"), encoding="utf-8")
-    (QUESTS / "chapters" / "mekanism.snbt").write_text(make_chapter("mekanism", MEK_CHAPTER_ID, mek_title, 1, "mekanism:metallurgic_infuser", MEK, "poketech:textures/quests/backgrounds/mekanism_book.png"), encoding="utf-8")
-    (QUESTS / "chapters" / "create.snbt").write_text(make_chapter("create", CREATE_CHAPTER_ID, create_title, 2, "create:mechanical_press", CREATE, "poketech:textures/quests/backgrounds/create_book.png"), encoding="utf-8")
+    (QUESTS / "chapters" / "create.snbt").write_text(make_chapter("create", CREATE_CHAPTER_ID, create_title, 1, "create:mechanical_press", CREATE, "poketech:textures/quests/backgrounds/create_book.png"), encoding="utf-8")
+    (QUESTS / "chapters" / "immersive.snbt").write_text(make_chapter("immersive", IMMERSIVE_CHAPTER_ID, immersive_title, 2, "immersiveengineering:hammer", IMMERSIVE, "poketech:textures/quests/backgrounds/immersive_book.png"), encoding="utf-8")
+    (QUESTS / "chapters" / "mekanism.snbt").write_text(make_chapter("mekanism", MEK_CHAPTER_ID, mek_title, 3, "mekanism:metallurgic_infuser", MEK, "poketech:textures/quests/backgrounds/mekanism_book.png"), encoding="utf-8")
 
     sky_lang = language_for("skyblock", SKY_CHAPTER_ID, sky_title, SKY)
     mek_lang = language_for("mekanism", MEK_CHAPTER_ID, mek_title, MEK)
     create_lang = language_for("create", CREATE_CHAPTER_ID, create_title, CREATE)
+    immersive_lang = language_for("immersive", IMMERSIVE_CHAPTER_ID, immersive_title, IMMERSIVE)
     group_lang = "{\n\tchapter_group.%s.title: %s\n}\n" % (GROUP_ID, q("PokeTech Arcana · Книга развития"))
-    merged = merge_languages(group_lang, sky_lang, mek_lang, create_lang)
+    merged = merge_languages(group_lang, sky_lang, create_lang, immersive_lang, mek_lang)
     for locale in ("ru_ru", "en_us"):
         (QUESTS / "lang" / f"{locale}.snbt").write_text(merged, encoding="utf-8")
         split = QUESTS / "lang" / locale
         (split / "chapters").mkdir(parents=True)
         (split / "chapter_group.snbt").write_text(group_lang, encoding="utf-8")
-        chapter_lang = "{\n\tchapter.%s.title: %s\n\tchapter.%s.title: %s\n\tchapter.%s.title: %s\n}\n" % (
-            SKY_CHAPTER_ID, q(sky_title), MEK_CHAPTER_ID, q(mek_title), CREATE_CHAPTER_ID, q(create_title)
+        chapter_lang = "{\n\tchapter.%s.title: %s\n\tchapter.%s.title: %s\n\tchapter.%s.title: %s\n\tchapter.%s.title: %s\n}\n" % (
+            SKY_CHAPTER_ID, q(sky_title), CREATE_CHAPTER_ID, q(create_title), IMMERSIVE_CHAPTER_ID, q(immersive_title), MEK_CHAPTER_ID, q(mek_title)
         )
         (split / "chapter.snbt").write_text(chapter_lang, encoding="utf-8")
         sky_quest_lang = "{\n" + "\n".join(sky_lang.strip().splitlines()[2:-1]) + "\n}\n"
         mek_quest_lang = "{\n" + "\n".join(mek_lang.strip().splitlines()[2:-1]) + "\n}\n"
         create_quest_lang = "{\n" + "\n".join(create_lang.strip().splitlines()[2:-1]) + "\n}\n"
+        immersive_quest_lang = "{\n" + "\n".join(immersive_lang.strip().splitlines()[2:-1]) + "\n}\n"
         (split / "chapters" / "skyblock.snbt").write_text(sky_quest_lang, encoding="utf-8")
         (split / "chapters" / "mekanism.snbt").write_text(mek_quest_lang, encoding="utf-8")
         (split / "chapters" / "create.snbt").write_text(create_quest_lang, encoding="utf-8")
+        (split / "chapters" / "immersive.snbt").write_text(immersive_quest_lang, encoding="utf-8")
 
     ftb_assets = ASSETS / "ftbquests"
     ftb_assets.mkdir(parents=True)
@@ -504,12 +525,14 @@ def write_build():
     make_background(tex / "backgrounds" / "skyblock_book.png", "SKYBLOCK: ИЗ ПУСТОТЫ К ПРОИЗВОДСТВУ", ["I · ОСТРОВ", "II · СИТО", "III · КАМЕНЬ", "IV · РЕСУРСЫ", "V · МИРЫ", "VI · АВТО", "VII · ПЕРЕХОД"], [(71, 127, 69), (36, 127, 160), (123, 77, 149), (179, 100, 22)], SKY)
     make_background(tex / "backgrounds" / "mekanism_book.png", "MEKANISM: ЭРА АТОМА", ["I · ОСНОВА", "II · МАШИНЫ", "III · СЕТИ", "IV · ФАБРИКИ", "V · ХИМИЯ", "VI · АТОМ", "VII · ФИНАЛ"], [(36, 127, 160), (71, 127, 69), (123, 77, 149), (165, 79, 59)], MEK)
     make_background(tex / "backgrounds" / "create_book.png", "CREATE: ФАБРИКА ПОКЕБОЛОВ", ["I · КИНЕТИКА", "II · МЕХАНИЗМЫ", "III · КОНВЕЙЕР", "IV · ДЕТАЛИ", "V · СБОРКА", "VI · ОСОБЫЕ", "VII · ФАБРИКА"], [(187, 137, 45), (69, 126, 72), (35, 128, 143), (176, 70, 65), (122, 75, 148), (57, 111, 168), (140, 91, 47)], CREATE)
-    palettes = [(36, 127, 160), (71, 127, 69), (123, 77, 149), (179, 100, 22), (71, 127, 69), (123, 77, 149), (179, 100, 22)]
-    for namespace, title in (("skyblock", "Skyblock"), ("mekanism", "Mekanism"), ("create", "Create")):
+    make_background(tex / "backgrounds" / "immersive_book.png", "IMMERSIVE ENGINEERING: ТЯЖЁЛАЯ ПРОМЫШЛЕННОСТЬ", ["I · РУКОВОДСТВО", "II · МАТЕРИАЛЫ", "III · СТАЛЬ", "IV · ЭНЕРГИЯ LV", "V · ЭЛЕКТРОСЕТЬ", "VI · МАШИНЫ", "VII · ТОПЛИВО", "VIII · ТЯЖЁЛАЯ", "IX · ИНТЕГРАЦИЯ"], [(47, 127, 137), (118, 143, 69), (104, 118, 133), (188, 129, 38), (60, 131, 170), (154, 95, 53), (110, 142, 79), (162, 75, 62), (134, 88, 149)], IMMERSIVE)
+    palettes = [(36, 127, 160), (71, 127, 69), (123, 77, 149), (179, 100, 22), (71, 127, 69), (123, 77, 149), (179, 100, 22), (165, 79, 59), (57, 111, 168)]
+    for namespace, title in (("skyblock", "Skyblock"), ("mekanism", "Mekanism"), ("create", "Create"), ("immersive", "Immersive Engineering")):
         names = ({
             "skyblock": ["Остров", "Просеивание", "Камень", "Ресурсы", "Измерения", "Автоматизация", "Переход"],
             "mekanism": ["Основа", "Машины", "Сети", "Фабрики", "Химия", "Атом", "Финал"],
             "create": ["Кинетика", "Механизмы", "Конвейер", "Детали", "Сборка", "Особые серии", "Фабрика"],
+            "immersive": ["Руководство", "Материалы", "Сталь", "Энергия LV", "Электросеть", "Машины", "Топливо", "Тяжёлая индустрия", "Интеграция"],
         }[namespace])
         for stage, (name, color) in enumerate(zip(names, palettes), 1):
             make_guide(tex / "guides" / f"{namespace}_{stage}.png", f"{title} · {name}", "Схема этапа и ключевой производственный поток", color, stage)
@@ -530,7 +553,7 @@ def write_build():
             for path in base.rglob("*"):
                 if path.is_file():
                     archive.write(path, path.relative_to(BUILD))
-    print(f"Built {len(SKY)} Skyblock + {len(MEK)} Mekanism + {len(CREATE)} Create quests")
+    print(f"Built {len(SKY)} Skyblock + {len(CREATE)} Create + {len(IMMERSIVE)} Immersive Engineering + {len(MEK)} Mekanism quests")
     print(f"Server package: {package} ({package.stat().st_size} bytes)")
 
 
