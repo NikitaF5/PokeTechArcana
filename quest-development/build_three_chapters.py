@@ -162,6 +162,46 @@ CHAPTERS = {
         "centers": [(0, 23), (14, 15), (28, 7), (42, 2), (56, 9), (70, 22), (84, 26), (98, 14)],
         "patterns": ["crescentR", "diamond", "ring", "star", "hex", "crescentL", "ritual", "doubleRing"],
     },
+    "pokemon": {
+        "title": "Pokémon: путь тренера", "file": "pokemon", "icon": "cobblemon:poke_ball", "target_count": 78,
+        "stages": [
+            ("I · ПЕРВЫЙ ПОКЕМОН", "Старт тренера", ["Покебол", "Первый бросок", "Ловля покемона", "Покедекс", "Лечение в центре", "Партия из трёх", "Полевой бой", "Первый значок", "Дневник тренера"]),
+            ("II · ПОКЕБОЛЫ", "Надёжная экипировка", ["Улучшенный покебол", "Великий покебол", "Ультрабол", "Приманка", "Починка покеболов", "Автокрафт покеболов", "Запас шаров", "Серия ловли", "Полевой набор"]),
+            ("III · УХОД", "Доверие и тренировка", ["Покекорм", "Счастье покемона", "Тренировочный манекен", "Опыт боя", "Природа покемона", "Характеристики", "Смена навыка", "Сбалансированная команда", "Уход без потерь"]),
+            ("IV · ЭВОЛЮЦИЯ", "Линии развития", ["Камень эволюции", "Уровень эволюции", "Торговая эволюция", "Дневная форма", "Ночная форма", "Разведение", "Яйцо покемона", "Редкая способность", "Полная линия эволюции"]),
+            ("V · ТИПЫ", "Командная синергия", ["Огненный тип", "Водный тип", "Травяной тип", "Электрический тип", "Психический тип", "Тёмный тип", "Контрпики", "Смена состава", "Команда под данж"]),
+            ("VI · ЛЕГЕНДЫ", "Редкие покемоны", ["След легендарного", "Святилище", "Ключевой предмет", "Охота по биому", "Погодное условие", "Печать легенды", "Подготовка ультраболов", "Испытание легенды", "Первый легендарный"]),
+            ("VII · МАСТЕР", "Финал тренера", ["Полный покедекс региона", "Команда уровня мастера", "Турнирная арена", "Серия побед", "Редкая форма", "Командная реликвия", "Питомник команды", "Зал славы", "Мастер-тренер"]),
+        ],
+        "centers": [(0, 20), (16, 19), (28, 7), (44, 4), (58, 17), (74, 22), (90, 12)],
+        "patterns": ["fanR", "crescentD", "ring", "star", "diamond", "crescentL", "doubleRing"],
+    },
+    "trainers": {
+        "title": "Тренеры и данжи: испытания миров", "file": "trainers", "icon": "rctmod:trainer_card", "target_count": 66,
+        "stages": [
+            ("I · ЗАЛЫ", "Первые тренеры", ["Колокол вызова", "Правила арены", "Тренер-новичок", "Победа в бою", "Награда зала", "Перерыв вызова", "Срок тренера", "Рейтинг побед"]),
+            ("II · БИОМЫ", "Данжи мира", ["Лесной данж", "Пещерный данж", "Пустынный данж", "Ледяной данж", "Набор ключей", "Маркер входа", "Сундук награды", "Секретный проход", "Карта биомов"]),
+            ("III · МЕХАНИКИ", "Сложность испытаний", ["Волна мобов", "Ограничение команды", "Время прохождения", "Модификатор типа", "Элитный тренер", "Групповая арена", "Проверка снаряжения", "Безопасный выход"]),
+            ("IV · НАГРАДЫ", "Трофеи и ресурсы", ["Жетон арены", "Редкий ресурс", "Яйцо покемона", "Свиток способности", "Косметический приз", "Ключ повторного входа", "Обмен жетонов", "Лотерея наград", "Коллекция трофеев"]),
+            ("V · ЛИГИ", "Лестница тренеров", ["Бронзовая лига", "Серебряная лига", "Золотая лига", "Элитная четвёрка", "Арена типов", "Кубок островов", "Серия без поражений", "Зал чемпионов"]),
+            ("VI · МИРОВЫЕ СОБЫТИЯ", "Большие сражения", ["Рейдовый сигнал", "Легендарный данж", "Командный босс", "Фаза босса", "Распределение ролей", "Общая награда", "Повторный рейд", "Трофей мира", "Главный чемпион"]),
+        ],
+        "centers": [(0, 4), (22, 4), (44, 4), (44, 20), (66, 20), (88, 12)],
+        "patterns": ["grid", "mirror", "grid", "mirror", "grid", "doubleRing"],
+    },
+    "endgame": {
+        "title": "Эндгейм: ядро PokeTech Arcana", "file": "endgame", "icon": "draconicevolution:chaos_shard", "target_count": 92,
+        "stages": [
+            ("I · СИНХРОНИЗАЦИЯ", "Объединение систем", ["ME-сеть", "Автокрафт покеболов", "Химический контур", "Магический источник", "Склад эссенции", "Единый терминал", "Проверка каналов", "Синхронизация"]),
+            ("II · ПРОИЗВОДСТВО", "Фабрика ресурсов", ["Рудная линия", "Дробление и обогащение", "Автосев", "Кухня покеболов", "Духовная добыча", "Кристаллическая ферма", "Параллельный заказ", "Резерв энергии", "Фабричный план"]),
+            ("III · МАГИЯ", "Большие ритуалы", ["Ритуал защиты", "Арканная кузница", "Кровавая энергия", "Запретная реликвия", "Стабильный источник", "Мастерский гримуар", "Сеть ритуалов", "Безопасный контур", "Магическое ядро"]),
+            ("IV · ПОКЕМОНЫ", "Команда эндгейма", ["Легендарный покемон", "Редкая форма", "Командная синергия", "Покемон-страж", "Тренерский зал", "Данж-мастер", "Питомник легенд", "Боевой комплект", "Команда создателя"]),
+            ("V · МЕГАЦЕЛИ", "Большие проекты", ["Квантовая связь", "Реакторный резерв", "Звёздная эссенция", "Реликвия измерения", "Автономный остров", "Мировой склад", "Арена сервера", "Карта достижений", "Проект века"]),
+            ("VI · ФИНАЛ", "Ядро Arcana", ["Сборка ядра", "Три ключа мира", "Сердце фабрики", "Сердце магии", "Сердце команды", "Финальный данж", "Испытание создателя", "Награда сервера", "PokeTech Arcana"]),
+        ],
+        "centers": [(0, 2), (0, 22), (28, 0), (28, 24), (58, 12), (88, 12)],
+        "patterns": ["diamond", "star", "ring", "ritual", "doubleRing", "containment"],
+    },
 }
 
 
@@ -236,6 +276,15 @@ def _generated_rows(pool: list[str], stage_counts: list[int]) -> list[list[str]]
     return [[pool[(stage * 3 + index) % len(pool)] for index in range(count)] for stage, count in enumerate(stage_counts)]
 
 
+def _target_stage_counts(namespace: str) -> list[int]:
+    config = CHAPTERS[namespace]
+    counts = [len(stage[2]) + 1 for stage in config["stages"]]
+    extra = config.get("target_count", sum(counts)) - sum(counts)
+    for index in range(extra):
+        counts[index % len(counts)] += 1
+    return counts
+
+
 ITEMS["irons"] = _generated_rows([
     "irons_spellbooks:scroll", "irons_spellbooks:inscription_table", "irons_spellbooks:arcane_anvil",
     "irons_spellbooks:fire_rune", "irons_spellbooks:ice_staff", "irons_spellbooks:lightning_rod",
@@ -270,6 +319,29 @@ ITEMS["mystical"] = _generated_rows([
     "mysticalagriculture:harvester", "mysticalagradditions:insanium_essence",
     "mysticalagriculture:awakened_supremium_hoe", "mysticalagriculture:inferium_seeds",
 ], [11, 12, 12, 10, 10, 11, 10, 10])
+ITEMS["pokemon"] = _generated_rows([
+    "cobblemon:poke_ball", "cobblemon:potion", "cobblemon:exp_candy_xs", "cobblemon:red_apricorn",
+    "cobblemon:great_ball", "cobblemon:ultra_ball", "cobblemon:revive", "cobblemon:healing_machine",
+    "cobblemon:pc", "cobbledex:cobbledex_item", "cobblemon:leaf_stone", "cobblemon:link_cable",
+    "cobblemon:rare_candy", "cobblemon:zinc", "cobblemon:focus_sash", "cobblemon:mystic_water",
+    "cobblemon:thunder_stone", "mega_showdown:mega_stone", "cobblemon:pasture", "cobblemon:lucky_egg",
+    "cobblemon:destiny_knot", "cobblemon:fire_stone", "cobblemon:master_ball", "cobblemon:life_orb",
+], _target_stage_counts("pokemon"))
+ITEMS["trainers"] = _generated_rows([
+    "rctmod:trainer_card", "rctmod:trainer_spawner", "cobblemonraiddens:raid_pouch",
+    "cobblemon_battle_tower:holo_battle_tower", "cobblemon:focus_sash", "cobblemon:red_card",
+    "cobblemon:eject_pack", "simpletms:tm_falseswipe", "simpletms:tm_rockblast",
+    "simpletms:tm_sludgewave", "simpletms:tm_psychocut", "simpletms:tm_dragonclaw",
+    "cobblemon:great_ball", "cobblemon:ultra_ball", "cobblemon:master_ball", "cobblemon:rare_candy",
+], _target_stage_counts("trainers"))
+ITEMS["endgame"] = _generated_rows([
+    "ae2:controller", "ae2:quantum_link", "mekanism:pellet_antimatter", "mekanismgenerators:fusion_reactor_controller",
+    "create:mechanical_arm", "create:precision_mechanism", "ars_nouveau:archmage_spell_book",
+    "occultism:dimensional_matrix", "forbidden_arcanus:eternal_stella", "evilcraft:dark_power_gem",
+    "mysticalagradditions:insanium_essence", "mysticalagriculture:awakened_supremium_hoe",
+    "cobblemon:master_ball", "mega_showdown:mega_stone", "draconicevolution:chaos_shard",
+    "draconicevolution:awakened_core", "draconicevolution:draconic_energy_core", "draconicevolution:dragon_heart",
+], _target_stage_counts("endgame"))
 
 
 def _pool(filename: str) -> list[str]:
@@ -340,8 +412,13 @@ def build_chapter(namespace: str, quest_cls, tag_main: str = "pta_main", tag_bra
     config = CHAPTERS[namespace]
     result = []
     prior_root = None
+    extras = config.get("target_count", sum(len(stage[2]) + 1 for stage in config["stages"])) - sum(len(stage[2]) + 1 for stage in config["stages"])
+    stage_extras = [0] * len(config["stages"])
+    for index in range(extras):
+        stage_extras[index % len(stage_extras)] += 1
     for stage_index, (phase, stage_name, configured_titles) in enumerate(config["stages"]):
-        titles = [*configured_titles, f"Контрольная сборка: {stage_name}"]
+        practice = [f"Практика этапа {number + 1}: {stage_name}" for number in range(stage_extras[stage_index])]
+        titles = [*configured_titles, *practice, f"Контрольная сборка: {stage_name}"]
         cx, cy = config["centers"][stage_index]
         points = _points(config["patterns"][stage_index], len(titles), cx, cy)
         for quest_index, title in enumerate(titles):

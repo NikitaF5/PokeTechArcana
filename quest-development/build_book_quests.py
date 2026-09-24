@@ -39,7 +39,10 @@ FNA_CHAPTER_ID = "5A2ECAFE0F001"
 IRONS_CHAPTER_ID = "5A2ECAFE10001"
 FARMER_CHAPTER_ID = "5A2ECAFE10002"
 MYSTICAL_CHAPTER_ID = "5A2ECAFE10003"
-PACKAGE_VERSION = "1.7.0"
+POKEMON_CHAPTER_ID = "5A2ECAFE20001"
+TRAINERS_CHAPTER_ID = "5A2ECAFE20002"
+ENDGAME_CHAPTER_ID = "5A2ECAFE20003"
+PACKAGE_VERSION = "1.8.0"
 
 
 @dataclass(frozen=True)
@@ -189,6 +192,9 @@ FNA = next_chapters.build_chapter("fna", Quest)
 IRONS = next_chapters.build_chapter("irons", Quest)
 FARMER = next_chapters.build_chapter("farmer", Quest)
 MYSTICAL = next_chapters.build_chapter("mystical", Quest)
+POKEMON = next_chapters.build_chapter("pokemon", Quest)
+TRAINERS = next_chapters.build_chapter("trainers", Quest)
+ENDGAME = next_chapters.build_chapter("endgame", Quest)
 MILESTONES = {
     "skyblock": {"start": 1, "sieve": 2, "cobble": 3, "ores": 4, "generator": 5, "autohammer": 6, "core": 7},
     "mekanism": {"osmium": 1, "enrichment": 2, "cables": 3, "basicfactory": 4, "purification": 5, "wind": 6, "fusion": 7},
@@ -203,6 +209,9 @@ MILESTONES = {
     "irons": {f"s{i:02d}_01": i for i in range(1, 9)},
     "farmer": {f"s{i:02d}_01": i for i in range(1, 8)},
     "mystical": {f"s{i:02d}_01": i for i in range(1, 9)},
+    "pokemon": {f"s{i:02d}_01": i for i in range(1, 8)},
+    "trainers": {f"s{i:02d}_01": i for i in range(1, 7)},
+    "endgame": {f"s{i:02d}_01": i for i in range(1, 7)},
 }
 
 
@@ -546,6 +555,9 @@ def write_build():
     validate(IRONS, "irons", 84)
     validate(FARMER, "farmer", 72)
     validate(MYSTICAL, "mystical", 86)
+    validate(POKEMON, "pokemon", 78)
+    validate(TRAINERS, "trainers", 66)
+    validate(ENDGAME, "endgame", 92)
     if BUILD.exists():
         shutil.rmtree(BUILD)
     (QUESTS / "chapters").mkdir(parents=True)
@@ -590,6 +602,9 @@ def write_build():
     irons_title = next_chapters.CHAPTERS["irons"]["title"]
     farmer_title = next_chapters.CHAPTERS["farmer"]["title"]
     mystical_title = next_chapters.CHAPTERS["mystical"]["title"]
+    pokemon_title = next_chapters.CHAPTERS["pokemon"]["title"]
+    trainers_title = next_chapters.CHAPTERS["trainers"]["title"]
+    endgame_title = next_chapters.CHAPTERS["endgame"]["title"]
     (QUESTS / "chapters" / "skyblock.snbt").write_text(make_chapter("skyblock", SKY_CHAPTER_ID, sky_title, 0, "exdeorum:oak_sieve", SKY, "poketech:textures/quests/backgrounds/skyblock_book.png"), encoding="utf-8")
     (QUESTS / "chapters" / "create.snbt").write_text(make_chapter("create", CREATE_CHAPTER_ID, create_title, 1, "create:mechanical_press", CREATE, "poketech:textures/quests/backgrounds/create_book.png"), encoding="utf-8")
     (QUESTS / "chapters" / "immersive.snbt").write_text(make_chapter("immersive", IMMERSIVE_CHAPTER_ID, immersive_title, 2, "immersiveengineering:hammer", IMMERSIVE, "poketech:textures/quests/backgrounds/immersive_book.png"), encoding="utf-8")
@@ -603,6 +618,9 @@ def write_build():
     (QUESTS / "chapters" / "irons.snbt").write_text(make_chapter("irons", IRONS_CHAPTER_ID, irons_title, 10, "irons_spellbooks:scroll", IRONS, "poketech:textures/quests/backgrounds/irons_book.png"), encoding="utf-8")
     (QUESTS / "chapters" / "farmer.snbt").write_text(make_chapter("farmer", FARMER_CHAPTER_ID, farmer_title, 11, "farmersdelight:cooking_pot", FARMER, "poketech:textures/quests/backgrounds/farmer_book.png"), encoding="utf-8")
     (QUESTS / "chapters" / "mystical.snbt").write_text(make_chapter("mystical", MYSTICAL_CHAPTER_ID, mystical_title, 12, "mysticalagriculture:inferium_essence", MYSTICAL, "poketech:textures/quests/backgrounds/mystical_book.png"), encoding="utf-8")
+    (QUESTS / "chapters" / "pokemon.snbt").write_text(make_chapter("pokemon", POKEMON_CHAPTER_ID, pokemon_title, 13, "cobblemon:poke_ball", POKEMON, "poketech:textures/quests/backgrounds/pokemon_book.png"), encoding="utf-8")
+    (QUESTS / "chapters" / "trainers.snbt").write_text(make_chapter("trainers", TRAINERS_CHAPTER_ID, trainers_title, 14, "rctmod:trainer_card", TRAINERS, "poketech:textures/quests/backgrounds/trainers_book.png"), encoding="utf-8")
+    (QUESTS / "chapters" / "endgame.snbt").write_text(make_chapter("endgame", ENDGAME_CHAPTER_ID, endgame_title, 15, "draconicevolution:chaos_shard", ENDGAME, "poketech:textures/quests/backgrounds/endgame_book.png"), encoding="utf-8")
 
     sky_lang = language_for("skyblock", SKY_CHAPTER_ID, sky_title, SKY)
     mek_lang = language_for("mekanism", MEK_CHAPTER_ID, mek_title, MEK)
@@ -617,8 +635,11 @@ def write_build():
     irons_lang = language_for("irons", IRONS_CHAPTER_ID, irons_title, IRONS)
     farmer_lang = language_for("farmer", FARMER_CHAPTER_ID, farmer_title, FARMER)
     mystical_lang = language_for("mystical", MYSTICAL_CHAPTER_ID, mystical_title, MYSTICAL)
+    pokemon_lang = language_for("pokemon", POKEMON_CHAPTER_ID, pokemon_title, POKEMON)
+    trainers_lang = language_for("trainers", TRAINERS_CHAPTER_ID, trainers_title, TRAINERS)
+    endgame_lang = language_for("endgame", ENDGAME_CHAPTER_ID, endgame_title, ENDGAME)
     group_lang = "{\n\tchapter_group.%s.title: %s\n}\n" % (GROUP_ID, q("PokeTech Arcana · Книга развития"))
-    merged = merge_languages(group_lang, sky_lang, create_lang, immersive_lang, mek_lang, ae2_lang, appmek_lang, ars_lang, occult_lang, evil_lang, fna_lang, irons_lang, farmer_lang, mystical_lang)
+    merged = merge_languages(group_lang, sky_lang, create_lang, immersive_lang, mek_lang, ae2_lang, appmek_lang, ars_lang, occult_lang, evil_lang, fna_lang, irons_lang, farmer_lang, mystical_lang, pokemon_lang, trainers_lang, endgame_lang)
     for locale in ("ru_ru", "en_us"):
         (QUESTS / "lang" / f"{locale}.snbt").write_text(merged, encoding="utf-8")
         split = QUESTS / "lang" / locale
@@ -628,7 +649,8 @@ def write_build():
             (SKY_CHAPTER_ID, sky_title), (CREATE_CHAPTER_ID, create_title), (IMMERSIVE_CHAPTER_ID, immersive_title),
             (MEK_CHAPTER_ID, mek_title), (AE2_CHAPTER_ID, ae2_title), (APPMEK_CHAPTER_ID, appmek_title), (ARS_CHAPTER_ID, ars_title),
             (OCCULT_CHAPTER_ID, occult_title), (EVIL_CHAPTER_ID, evil_title), (FNA_CHAPTER_ID, fna_title),
-            (IRONS_CHAPTER_ID, irons_title), (FARMER_CHAPTER_ID, farmer_title), (MYSTICAL_CHAPTER_ID, mystical_title)
+            (IRONS_CHAPTER_ID, irons_title), (FARMER_CHAPTER_ID, farmer_title), (MYSTICAL_CHAPTER_ID, mystical_title),
+            (POKEMON_CHAPTER_ID, pokemon_title), (TRAINERS_CHAPTER_ID, trainers_title), (ENDGAME_CHAPTER_ID, endgame_title)
         )) + "\n}\n"
         (split / "chapter.snbt").write_text(chapter_lang, encoding="utf-8")
         sky_quest_lang = "{\n" + "\n".join(sky_lang.strip().splitlines()[2:-1]) + "\n}\n"
@@ -644,6 +666,9 @@ def write_build():
         irons_quest_lang = "{\n" + "\n".join(irons_lang.strip().splitlines()[2:-1]) + "\n}\n"
         farmer_quest_lang = "{\n" + "\n".join(farmer_lang.strip().splitlines()[2:-1]) + "\n}\n"
         mystical_quest_lang = "{\n" + "\n".join(mystical_lang.strip().splitlines()[2:-1]) + "\n}\n"
+        pokemon_quest_lang = "{\n" + "\n".join(pokemon_lang.strip().splitlines()[2:-1]) + "\n}\n"
+        trainers_quest_lang = "{\n" + "\n".join(trainers_lang.strip().splitlines()[2:-1]) + "\n}\n"
+        endgame_quest_lang = "{\n" + "\n".join(endgame_lang.strip().splitlines()[2:-1]) + "\n}\n"
         (split / "chapters" / "skyblock.snbt").write_text(sky_quest_lang, encoding="utf-8")
         (split / "chapters" / "mekanism.snbt").write_text(mek_quest_lang, encoding="utf-8")
         (split / "chapters" / "create.snbt").write_text(create_quest_lang, encoding="utf-8")
@@ -657,6 +682,9 @@ def write_build():
         (split / "chapters" / "irons.snbt").write_text(irons_quest_lang, encoding="utf-8")
         (split / "chapters" / "farmer.snbt").write_text(farmer_quest_lang, encoding="utf-8")
         (split / "chapters" / "mystical.snbt").write_text(mystical_quest_lang, encoding="utf-8")
+        (split / "chapters" / "pokemon.snbt").write_text(pokemon_quest_lang, encoding="utf-8")
+        (split / "chapters" / "trainers.snbt").write_text(trainers_quest_lang, encoding="utf-8")
+        (split / "chapters" / "endgame.snbt").write_text(endgame_quest_lang, encoding="utf-8")
 
     ftb_assets = ASSETS / "ftbquests"
     ftb_assets.mkdir(parents=True)
@@ -676,8 +704,11 @@ def write_build():
     make_atlas_background(tex / "backgrounds" / "irons_book.png", "IRON'S SPELLS: ГРИМУАР АРКАНЫ", "irons", IRONS, [(118, 87, 168), (189, 138, 73), (85, 117, 159), (145, 79, 129)])
     make_atlas_background(tex / "backgrounds" / "farmer_book.png", "FARMER'S DELIGHT: СЕЗОНЫ ОСТРОВА", "farmer", FARMER, [(178, 111, 61), (111, 153, 88), (192, 146, 66), (81, 132, 95)])
     make_atlas_background(tex / "backgrounds" / "mystical_book.png", "MYSTICAL AGRICULTURE: СЕМЕНА ЭЛЕМЕНТОВ", "mystical", MYSTICAL, [(77, 131, 166), (165, 110, 72), (91, 108, 160), (115, 78, 145)])
+    make_atlas_background(tex / "backgrounds" / "pokemon_book.png", "POKÉMON: ПУТЬ ТРЕНЕРА", "pokemon", POKEMON, [(78, 134, 170), (208, 139, 61), (88, 151, 102), (154, 83, 96)])
+    make_atlas_background(tex / "backgrounds" / "trainers_book.png", "ТРЕНЕРЫ И ДАНЖИ: ИСПЫТАНИЯ МИРОВ", "trainers", TRAINERS, [(155, 91, 85), (184, 139, 72), (77, 112, 143), (114, 78, 128)])
+    make_atlas_background(tex / "backgrounds" / "endgame_book.png", "ЭНДГЕЙМ: ЯДРО POKETECH ARCANA", "endgame", ENDGAME, [(118, 89, 159), (180, 126, 67), (72, 126, 158), (146, 70, 105)])
     palettes = [(36, 127, 160), (71, 127, 69), (123, 77, 149), (179, 100, 22), (71, 127, 69), (123, 77, 149), (179, 100, 22), (165, 79, 59), (57, 111, 168), (139, 90, 158), (163, 79, 87), (61, 122, 114), (118, 87, 168), (178, 111, 61), (77, 131, 166)]
-    for namespace, title in (("skyblock", "Skyblock"), ("mekanism", "Mekanism"), ("create", "Create"), ("immersive", "Immersive Engineering"), ("ae2", "Applied Energistics 2"), ("appmek", "Applied Mekanistics"), ("ars", "Ars Nouveau"), ("occult", "Occultism"), ("evil", "EvilCraft"), ("fna", "Forbidden & Arcanus"), ("irons", "Iron's Spells"), ("farmer", "Farmer's Delight"), ("mystical", "Mystical Agriculture")):
+    for namespace, title in (("skyblock", "Skyblock"), ("mekanism", "Mekanism"), ("create", "Create"), ("immersive", "Immersive Engineering"), ("ae2", "Applied Energistics 2"), ("appmek", "Applied Mekanistics"), ("ars", "Ars Nouveau"), ("occult", "Occultism"), ("evil", "EvilCraft"), ("fna", "Forbidden & Arcanus"), ("irons", "Iron's Spells"), ("farmer", "Farmer's Delight"), ("mystical", "Mystical Agriculture"), ("pokemon", "Pokémon"), ("trainers", "Тренеры и данжи"), ("endgame", "Эндгейм")):
         names = ({
             "skyblock": ["Остров", "Просеивание", "Камень", "Ресурсы", "Измерения", "Автоматизация", "Переход"],
             "mekanism": ["Основа", "Машины", "Сети", "Фабрики", "Химия", "Атом", "Финал"],
@@ -692,6 +723,9 @@ def write_build():
             "irons": next_chapters.stage_names("irons"),
             "farmer": next_chapters.stage_names("farmer"),
             "mystical": next_chapters.stage_names("mystical"),
+            "pokemon": next_chapters.stage_names("pokemon"),
+            "trainers": next_chapters.stage_names("trainers"),
+            "endgame": next_chapters.stage_names("endgame"),
         }[namespace])
         for stage, (name, color) in enumerate(zip(names, palettes), 1):
             make_guide(tex / "guides" / f"{namespace}_{stage}.png", f"{title} · {name}", "Схема этапа и ключевой производственный поток", color, stage)
@@ -712,9 +746,10 @@ def write_build():
             for path in base.rglob("*"):
                 if path.is_file():
                     archive.write(path, path.relative_to(BUILD))
-    print(f"Built {len(SKY)} Skyblock + {len(CREATE)} Create + {len(IMMERSIVE)} Immersive Engineering + {len(MEK)} Mekanism + {len(AE2)} AE2 + {len(APPMEK)} Applied Mekanistics + {len(ARS)} Ars Nouveau + {len(OCCULT)} Occultism + {len(EVIL)} EvilCraft + {len(FNA)} Forbidden & Arcanus + {len(IRONS)} Iron's Spells + {len(FARMER)} Farmer's Delight + {len(MYSTICAL)} Mystical Agriculture quests")
+    print(f"Built {len(SKY)} Skyblock + {len(CREATE)} Create + {len(IMMERSIVE)} Immersive Engineering + {len(MEK)} Mekanism + {len(AE2)} AE2 + {len(APPMEK)} Applied Mekanistics + {len(ARS)} Ars Nouveau + {len(OCCULT)} Occultism + {len(EVIL)} EvilCraft + {len(FNA)} Forbidden & Arcanus + {len(IRONS)} Iron's Spells + {len(FARMER)} Farmer's Delight + {len(MYSTICAL)} Mystical Agriculture + {len(POKEMON)} Pokemon + {len(TRAINERS)} Trainers + {len(ENDGAME)} Endgame quests")
     print(f"Server package: {package} ({package.stat().st_size} bytes)")
 
 
 if __name__ == "__main__":
     write_build()
+
