@@ -11,6 +11,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
 import build_mekanism_quests as old_mek
+import build_create_quests as create_data
 
 
 ROOT = Path(__file__).resolve().parent
@@ -25,7 +26,8 @@ CLIENT_PACK = WORKSPACE / "skyblock-update" / "pack"
 GROUP_ID = "271C0B00CAFE1001"
 SKY_CHAPTER_ID = "271C0B00CAFE2001"
 MEK_CHAPTER_ID = "1A2E2B8D9E0A2001"
-PACKAGE_VERSION = "1.4.2"
+CREATE_CHAPTER_ID = "3C0EA7ECAFE3001"
+PACKAGE_VERSION = "1.4.3"
 
 
 @dataclass(frozen=True)
@@ -142,9 +144,22 @@ def mek_quests() -> list[Quest]:
 
 
 MEK = mek_quests()
+
+
+def create_quests() -> list[Quest]:
+    result = []
+    for node in create_data.NODES:
+        key, title, phase, desc, x, y, shape, size, tasks, deps, reward, xp, tag, icon = node
+        result.append(Quest(key, title, phase, desc, float(x), float(y), shape, size,
+                            tuple(tasks), tuple(deps), reward, xp, tag, icon or tasks[0][0]))
+    return result
+
+
+CREATE = create_quests()
 MILESTONES = {
     "skyblock": {"start": 1, "sieve": 2, "cobble": 3, "ores": 4, "generator": 5, "autohammer": 6, "core": 7},
     "mekanism": {"osmium": 1, "enrichment": 2, "cables": 3, "basicfactory": 4, "purification": 5, "wind": 6, "fusion": 7},
+    "create": {"rotation": 1, "casing": 2, "belt": 3, "red_sheet": 4, "deployer": 5, "special_series": 6, "auto_factory": 7},
 }
 
 
@@ -421,6 +436,7 @@ def validate(quests: list[Quest], namespace: str):
 def write_build():
     validate(SKY, "skyblock")
     validate(MEK, "mekanism")
+    validate(CREATE, "create")
     if BUILD.exists():
         shutil.rmtree(BUILD)
     (QUESTS / "chapters").mkdir(parents=True)
@@ -454,26 +470,31 @@ def write_build():
     (QUESTS / "chapter_groups.snbt").write_text(groups, encoding="utf-8")
     sky_title = "Skyblock: из пустоты к производству"
     mek_title = "Mekanism: эра атома"
+    create_title = "Create: фабрика покеболов"
     (QUESTS / "chapters" / "skyblock.snbt").write_text(make_chapter("skyblock", SKY_CHAPTER_ID, sky_title, 0, "exdeorum:oak_sieve", SKY, "poketech:textures/quests/backgrounds/skyblock_book.png"), encoding="utf-8")
     (QUESTS / "chapters" / "mekanism.snbt").write_text(make_chapter("mekanism", MEK_CHAPTER_ID, mek_title, 1, "mekanism:metallurgic_infuser", MEK, "poketech:textures/quests/backgrounds/mekanism_book.png"), encoding="utf-8")
+    (QUESTS / "chapters" / "create.snbt").write_text(make_chapter("create", CREATE_CHAPTER_ID, create_title, 2, "create:mechanical_press", CREATE, "poketech:textures/quests/backgrounds/create_book.png"), encoding="utf-8")
 
     sky_lang = language_for("skyblock", SKY_CHAPTER_ID, sky_title, SKY)
     mek_lang = language_for("mekanism", MEK_CHAPTER_ID, mek_title, MEK)
+    create_lang = language_for("create", CREATE_CHAPTER_ID, create_title, CREATE)
     group_lang = "{\n\tchapter_group.%s.title: %s\n}\n" % (GROUP_ID, q("PokeTech Arcana · Книга развития"))
-    merged = merge_languages(group_lang, sky_lang, mek_lang)
+    merged = merge_languages(group_lang, sky_lang, mek_lang, create_lang)
     for locale in ("ru_ru", "en_us"):
         (QUESTS / "lang" / f"{locale}.snbt").write_text(merged, encoding="utf-8")
         split = QUESTS / "lang" / locale
         (split / "chapters").mkdir(parents=True)
         (split / "chapter_group.snbt").write_text(group_lang, encoding="utf-8")
-        chapter_lang = "{\n\tchapter.%s.title: %s\n\tchapter.%s.title: %s\n}\n" % (
-            SKY_CHAPTER_ID, q(sky_title), MEK_CHAPTER_ID, q(mek_title)
+        chapter_lang = "{\n\tchapter.%s.title: %s\n\tchapter.%s.title: %s\n\tchapter.%s.title: %s\n}\n" % (
+            SKY_CHAPTER_ID, q(sky_title), MEK_CHAPTER_ID, q(mek_title), CREATE_CHAPTER_ID, q(create_title)
         )
         (split / "chapter.snbt").write_text(chapter_lang, encoding="utf-8")
         sky_quest_lang = "{\n" + "\n".join(sky_lang.strip().splitlines()[2:-1]) + "\n}\n"
         mek_quest_lang = "{\n" + "\n".join(mek_lang.strip().splitlines()[2:-1]) + "\n}\n"
+        create_quest_lang = "{\n" + "\n".join(create_lang.strip().splitlines()[2:-1]) + "\n}\n"
         (split / "chapters" / "skyblock.snbt").write_text(sky_quest_lang, encoding="utf-8")
         (split / "chapters" / "mekanism.snbt").write_text(mek_quest_lang, encoding="utf-8")
+        (split / "chapters" / "create.snbt").write_text(create_quest_lang, encoding="utf-8")
 
     ftb_assets = ASSETS / "ftbquests"
     ftb_assets.mkdir(parents=True)
@@ -482,9 +503,14 @@ def write_build():
     make_tile(tex / "ui" / "parchment_tile.png")
     make_background(tex / "backgrounds" / "skyblock_book.png", "SKYBLOCK: ИЗ ПУСТОТЫ К ПРОИЗВОДСТВУ", ["I · ОСТРОВ", "II · СИТО", "III · КАМЕНЬ", "IV · РЕСУРСЫ", "V · МИРЫ", "VI · АВТО", "VII · ПЕРЕХОД"], [(71, 127, 69), (36, 127, 160), (123, 77, 149), (179, 100, 22)], SKY)
     make_background(tex / "backgrounds" / "mekanism_book.png", "MEKANISM: ЭРА АТОМА", ["I · ОСНОВА", "II · МАШИНЫ", "III · СЕТИ", "IV · ФАБРИКИ", "V · ХИМИЯ", "VI · АТОМ", "VII · ФИНАЛ"], [(36, 127, 160), (71, 127, 69), (123, 77, 149), (165, 79, 59)], MEK)
+    make_background(tex / "backgrounds" / "create_book.png", "CREATE: ФАБРИКА ПОКЕБОЛОВ", ["I · КИНЕТИКА", "II · МЕХАНИЗМЫ", "III · КОНВЕЙЕР", "IV · ДЕТАЛИ", "V · СБОРКА", "VI · ОСОБЫЕ", "VII · ФАБРИКА"], [(187, 137, 45), (69, 126, 72), (35, 128, 143), (176, 70, 65), (122, 75, 148), (57, 111, 168), (140, 91, 47)], CREATE)
     palettes = [(36, 127, 160), (71, 127, 69), (123, 77, 149), (179, 100, 22), (71, 127, 69), (123, 77, 149), (179, 100, 22)]
-    for namespace, title in (("skyblock", "Skyblock"), ("mekanism", "Mekanism")):
-        names = (["Остров", "Просеивание", "Камень", "Ресурсы", "Измерения", "Автоматизация", "Переход"] if namespace == "skyblock" else ["Основа", "Машины", "Сети", "Фабрики", "Химия", "Атом", "Финал"])
+    for namespace, title in (("skyblock", "Skyblock"), ("mekanism", "Mekanism"), ("create", "Create")):
+        names = ({
+            "skyblock": ["Остров", "Просеивание", "Камень", "Ресурсы", "Измерения", "Автоматизация", "Переход"],
+            "mekanism": ["Основа", "Машины", "Сети", "Фабрики", "Химия", "Атом", "Финал"],
+            "create": ["Кинетика", "Механизмы", "Конвейер", "Детали", "Сборка", "Особые серии", "Фабрика"],
+        }[namespace])
         for stage, (name, color) in enumerate(zip(names, palettes), 1):
             make_guide(tex / "guides" / f"{namespace}_{stage}.png", f"{title} · {name}", "Схема этапа и ключевой производственный поток", color, stage)
 
@@ -504,7 +530,7 @@ def write_build():
             for path in base.rglob("*"):
                 if path.is_file():
                     archive.write(path, path.relative_to(BUILD))
-    print(f"Built {len(SKY)} Skyblock + {len(MEK)} Mekanism quests")
+    print(f"Built {len(SKY)} Skyblock + {len(MEK)} Mekanism + {len(CREATE)} Create quests")
     print(f"Server package: {package} ({package.stat().st_size} bytes)")
 
 
