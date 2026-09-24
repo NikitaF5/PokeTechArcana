@@ -202,6 +202,84 @@ CHAPTERS = {
         "centers": [(0, 2), (0, 22), (28, 0), (28, 24), (58, 12), (88, 12)],
         "patterns": ["diamond", "star", "ring", "ritual", "doubleRing", "containment"],
     },
+    "vampirism": {
+        "title": "Vampirism: ночь и кровь", "file": "vampirism", "icon": "vampirism:vampire_book", "target_count": 72,
+        "stages": [
+            ("I · НОЧНАЯ КРОВЬ", "Первые следы", ["Blood Bottle", "Vampire Book", "Garlic", "Кровавый след", "Ночная охота", "Первый клан", "Кровавый алтарь", "Посвящение"]),
+            ("II · ОХОТНИК", "Оружие против тьмы", ["Hunter Table", "Stake", "Basic Crossbow", "Holy Water", "Crucifix", "Hunter Intel", "Серебряная стрела", "Охотничий плащ", "Очищенный алтарь"]),
+            ("III · ВАМПИР", "Становление ночным", ["Injection Empty", "Pure Blood", "Altar Inspiration", "Vampire Cloak", "Vampire Minion", "Blood Level", "Ночное зрение", "Скорость вампира", "Кровавый клан"]),
+            ("IV · РАЗВИТИЕ", "Сила клана", ["Altar Infusion", "Pure Blood II", "Vampire Beacon", "Minion Binding", "Кровавая броня", "Регенерация", "Контроль жажды", "Высший уровень"]),
+            ("V · ВЕРВОЛЬФ", "Вторая сторона ночи", ["Werewolf Pelt", "Bone Necklace", "Stone Altar", "Magic Wood", "Werewolf Chestplate", "Raw Silver", "Werewolf Minion", "Проклятие луны"]),
+            ("VI · КЛАНЫ", "Война фракций", ["Vampire Fang", "Blood Wine", "Blood Sausage", "Alchemical Cocktail", "Vampire Beacon II", "Осада деревни", "Ритуал клана", "Ночной чемпион"]),
+        ],
+        "centers": [(0, 13), (20, 3), (40, 12), (60, 3), (80, 20), (100, 12)],
+        "patterns": ["crescentR", "grid", "ring", "mirror", "star", "doubleRing"],
+    },
+    "cobblemon_advanced": {
+        "title": "Cobblemon: мастерство региона", "file": "cobblemon_advanced", "icon": "cobblemon:master_ball", "target_count": 80,
+        "stages": [
+            ("I · КОЛЛЕКЦИЯ", "Полный покедекс", ["Региональный покедекс", "Редкие биомы", "Ночная форма", "Погодная форма", "Разведение", "Яйцо с наследием", "Питомник", "Селекция способностей", "Каталог форм"]),
+            ("II · БОЕВАЯ СЕТЬ", "Тактика команды", ["Focus Sash", "Choice предмет", "False Swipe", "Редкая способность", "Смена состава", "Контртип", "Статусный набор", "Командная тактика", "Боевая запись"]),
+            ("III · МЕГА", "Мегаэволюция и формы", ["Mega Stone", "Soul Dew", "Red Orb", "Adamant Orb", "Griseous Orb", "Deoxys Meteorite", "Мегаформа", "Стабильная форма", "Мастер форм"]),
+            ("IV · РЕЙДЫ", "Рейдовая подготовка", ["Raid Pouch", "Raid Den", "Полевой сканер", "Командный рейд", "Фаза босса", "Рейдовая награда", "Легендарный рейд", "Трофей рейда", "Повторный рейд"]),
+            ("V · БАШНЯ", "Башня сражений", ["Battle Tower", "Серия побед", "Ограничение состава", "Этаж башни", "Элитный противник", "Награда башни", "Мастерская башни", "Финальный этаж", "Чемпион башни"]),
+            ("VI · РЕЛИКВИИ", "Легендарные монументы", ["Registeel Lock", "Mesprit Plume", "Azure Flute", "Virizion Footprints", "Meloetta Jukebox", "Eternatus Cocoon", "Ключ монумента", "Печать легенды", "Хранитель региона"]),
+        ],
+        "centers": [(0, 18), (20, 3), (40, 22), (60, 2), (80, 18), (100, 10)],
+        "patterns": ["fanR", "diamond", "star", "grid", "crescentL", "doubleRing"],
+    },
+    "achievements": {
+        "title": "PokeTech Arcana: достижения сервера", "file": "achievements", "icon": "minecraft:nether_star", "target_count": 64,
+        "stages": [
+            ("I · ОСТРОВ", "Основание колонии", ["Первый остров", "Первая автоматизация", "Первый данж", "Первая линия квестов", "Склад игрока", "Безопасный хаб", "Общий проект", "Колония"]),
+            ("II · ИССЛЕДОВАТЕЛЬ", "Миры и открытия", ["Все измерения", "Редкий биом", "Секретная структура", "Ночная экспедиция", "Данж без смерти", "Карта мира", "Архив открытий", "Мастер исследователь"]),
+            ("III · ИНЖЕНЕР", "Большая машина", ["Стабильная энергия", "Автокрафт", "Реактор", "Химический завод", "Магическая фабрика", "Покебол-фабрика", "Резервный контур", "Инженер века"]),
+            ("IV · ЧЕМПИОН", "Команда и бой", ["Полный покедекс", "Победа в данже", "Победа над боссом", "Легендарный покемон", "Башня без поражений", "Командный проект", "Зал славы", "Чемпион сервера"]),
+            ("V · СОЗДАТЕЛЬ", "Финальная коллекция", ["Все квестовые главы", "Все реликвии", "Все трофеи", "Все типы автоматизации", "Финальная ферма", "Финальная арена", "Серверный монумент", "PokeTech Arcana"]),
+        ],
+        "centers": [(0, 12), (22, 20), (44, 4), (66, 20), (88, 12)],
+        "patterns": ["ring", "diamond", "fanR", "star", "doubleRing"],
+    },
+    "apotheosis": {
+        "title": "Apotheosis: кузница героя", "file": "apotheosis", "icon": "apotheosis:reforging_table", "target_count": 76,
+        "stages": [
+            ("I · НАХОДКИ", "Первые аффиксы", ["Редкий предмет", "Идентификация", "Сила аффикса", "Уровень редкости", "Таблица характеристик", "Сравнение добычи", "Разбор предмета", "Пыль самоцветов", "Первый комплект"]),
+            ("II · КУЗНИЦА", "Перековка снаряжения", ["Salvaging Table", "Reforging Table", "Материал перековки", "Редкий материал", "Сохранение аффикса", "Новая характеристика", "Стоимость опыта", "Перековка оружия", "Перековка брони"]),
+            ("III · САМОЦВЕТЫ", "Огранка и гнёзда", ["Неогранённый самоцвет", "Gem Cutting Table", "Качество камня", "Гнездо предмета", "Sigil of Socketing", "Вставка самоцвета", "Извлечение камня", "Синергия камней", "Набор самоцветов"]),
+            ("IV · ЗАЧАРОВАНИЕ", "Библиотека чар", ["Hellshelf", "Уровень Eterna", "Quanta", "Arcana", "Enchanting Library", "Хранение чар", "Выбор чар", "Scrap Tome", "Мастерская чар"]),
+            ("V · ЭЛИКСИРЫ", "Расходные реликвии", ["Potion Charm", "Заряд талисмана", "Автоподача зелий", "Защитный эликсир", "Боевой эликсир", "Долгий эффект", "Ремонт талисмана", "Комплект исследователя", "Полевой арсенал"]),
+            ("VI · МИФИЧЕСКОЕ", "Высшие материалы", ["Epic Material", "Mythic Material", "Легендарный аффикс", "Три гнезда", "Идеальный самоцвет", "Мифическая перековка", "Комплект босса", "Проверка урона", "Мифический предмет"]),
+            ("VII · ГЕРОЙ", "Сборка героя", ["Оружие героя", "Броня героя", "Амулет героя", "Синергия аффиксов", "Синергия самоцветов", "Полный набор чар", "Испытание манекена", "Испытание босса", "Кузница героя"]),
+        ],
+        "centers": [(0, 20), (16, 19), (28, 7), (44, 4), (58, 17), (74, 22), (90, 12)],
+        "patterns": ["fanR", "crescentD", "ring", "star", "diamond", "crescentL", "doubleRing"],
+    },
+    "cataclysm": {
+        "title": "Cataclysm: цитадели боссов", "file": "cataclysm", "icon": "cataclysm:witherite_ingot", "target_count": 70,
+        "stages": [
+            ("I · РАЗВЕДКА", "Следы цитаделей", ["Карта руин", "Подготовка еды", "Огнестойкость", "Щит и лук", "Точка возврата", "Первый разведчик", "Ловушки данжа", "Вход в цитадель"]),
+            ("II · ИГНИС", "Огненная крепость", ["Burning Ashes", "Алтарь огня", "Пламенные стражи", "Фаза щита", "Фаза клинка", "Победа над Ignis", "Ignitium Ingot", "Incinerator", "Трофей огня"]),
+            ("III · ЛЕВИАФАН", "Глубины бездны", ["Подводная подготовка", "Затонувший храм", "Стражи глубин", "Void Core", "Фаза течений", "Фаза пасти", "Победа над Leviathan", "Void Forge"]),
+            ("IV · МЕХАНИЗМ", "Древняя фабрика", ["Mech Eye", "Силовые ячейки", "Охрана фабрики", "Отключение узлов", "Механический босс", "Фаза перегрева", "Победа в фабрике", "Механический трофей", "Ключ следующего зала"]),
+            ("V · ПРОКЛЯТЫЕ ЗЕМЛИ", "Высшие боссы", ["Проклятая арена", "Подготовка команды", "Уклонение от залпов", "Разрушение тотемов", "Финальная фаза", "Cursed Bow", "Музыкальный трофей", "Полный комплект"]),
+            ("VI · ЦИТАДЕЛЬ", "Мастер боссов", ["Все ключи", "Маршрут без смерти", "Набор трофеев", "Оружие Cataclysm", "Броня Cataclysm", "Повторный забег", "Скоростное испытание", "Главный трофей", "Покоритель цитаделей"]),
+        ],
+        "centers": [(0, 4), (22, 4), (44, 4), (44, 20), (66, 20), (88, 12)],
+        "patterns": ["grid", "mirror", "grid", "mirror", "grid", "doubleRing"],
+    },
+    "draconic": {
+        "title": "Draconic Evolution: сердце хаоса", "file": "draconic", "icon": "draconicevolution:chaos_shard", "target_count": 88,
+        "stages": [
+            ("I · ДРАКОНИЙ МЕТАЛЛ", "Начало технологии", ["Draconium Dust", "Draconium Ingot", "Заряженный драконий блок", "Драконье сердце", "Fusion Crafting", "Базовый инжектор", "Wyvern Core", "Первый модуль"]),
+            ("II · ЭНЕРГИЯ", "Сферическое хранилище", ["Energy Core", "Стабилизатор ядра", "Energy Pylon", "Первый тир", "Миллиард RF", "Контроль ввода", "Контроль вывода", "Аварийный резерв", "Полная сфера"]),
+            ("III · WYVERN", "Экипировка виверны", ["Wyvern Core", "Wyvern Injector", "Wyvern Sword", "Wyvern Armor", "Модуль щита", "Модуль скорости", "Беспроводной кристалл", "Заряд экипировки", "Комплект Wyvern"]),
+            ("IV · РЕАКТОР", "Драконий реактор", ["Reactor Core", "Reactor Stabilizer", "Flux Gate", "Энергетическая сеть", "Запуск реакции", "Температура ядра", "Удержание поля", "Аварийная остановка", "Стабильный реактор"]),
+            ("V · ДРАКОНИЙ ТИР", "Пробуждённая мощь", ["Awakened Core", "Draconic Injector", "Draconic Chestpiece", "Draconic Staff", "Модуль полёта", "Модуль урона", "Модуль щита II", "Драконий комплект", "Испытание дракона"]),
+            ("VI · ХАОС", "Финальная ступень", ["Chaos Guardian", "Chaos Shard", "Chaotic Core", "Chaotic Injector", "Хаотический модуль", "Максимальная энергия", "Финальный реактор", "Посох хаоса", "Сердце хаоса"]),
+        ],
+        "centers": [(0, 2), (0, 22), (28, 0), (28, 24), (58, 12), (88, 12)],
+        "patterns": ["diamond", "star", "ring", "ritual", "doubleRing", "containment"],
+    },
 }
 
 
@@ -342,6 +420,51 @@ ITEMS["endgame"] = _generated_rows([
     "cobblemon:master_ball", "mega_showdown:mega_stone", "draconicevolution:chaos_shard",
     "draconicevolution:awakened_core", "draconicevolution:draconic_energy_core", "draconicevolution:dragon_heart",
 ], _target_stage_counts("endgame"))
+ITEMS["vampirism"] = _generated_rows([
+    "vampirism:blood_bottle", "vampirism:injection_empty", "vampirism:vampire_book", "vampirism:garlic",
+    "vampirism:coffin_red", "vampirism:altar_inspiration", "vampirism:pure_blood_0", "vampirism:altar_infusion",
+    "vampirism:vampire_cloak_red_black", "vampirism:vampire_beacon", "vampirism:vampire_minion_binding", "vampirism:pure_blood_1",
+    "vampirism:stake", "vampirism:basic_crossbow", "vampirism:hunter_table", "vampirism:hunter_intel_5",
+    "vampirism:holy_water_splash_bottle_normal", "vampirism:crucifix_normal", "vampirism:hunter_hat_head_0", "vampirism:basic_tech_crossbow",
+    "werewolves:pelt", "werewolves:bone_necklace", "werewolves:liver", "werewolves:stone_altar", "werewolves:magic_wood",
+    "werewolves:pelt_chestplate", "werewolves:raw_silver", "werewolves:werewolf_minion_charm", "werewolves:injection_un_werewolf",
+    "vampiresdelight:blood_wine_glass", "vampiresdelight:blood_sausage", "vampiresdelight:cooked_bat", "vampiresdelight:borscht",
+    "vampirism:pure_blood_4", "vampiresdelight:alchemical_cocktail", "vampirism:vampire_fang",
+], _target_stage_counts("vampirism"))
+ITEMS["cobblemon_advanced"] = _generated_rows([
+    "cobbledex:cobbledex_item", "cobblemon:pasture", "cobblemon:destiny_knot", "cobblemon:focus_sash",
+    "simpletms:tm_falseswipe", "cobblemon:rare_candy", "mega_showdown:mega_stone", "mega_showdown:soul_dew",
+    "mega_showdown:red_orb", "mega_showdown:adamant_orb", "mega_showdown:griseous_orb", "mega_showdown:deoxys_meteorite",
+    "cobblemonraiddens:raid_pouch", "cobblemon_battle_tower:holo_battle_tower", "cobblemon:master_ball", "cobblemon:ultra_ball",
+    "legendarymonuments:registeel_lock", "legendarymonuments:mesprit_plume", "legendarymonuments:azure_flute",
+    "legendarymonuments:virizion_footprints", "legendarymonuments:meloetta_jukebox", "legendarymonuments:eternatus_cocoon",
+], _target_stage_counts("cobblemon_advanced"))
+ITEMS["achievements"] = _generated_rows([
+    "minecraft:oak_sapling", "minecraft:diamond", "minecraft:nether_star", "minecraft:ender_eye", "minecraft:beacon",
+    "minecraft:elytra", "minecraft:dragon_egg", "minecraft:netherite_ingot", "minecraft:heart_of_the_sea",
+    "minecraft:conduit", "minecraft:totem_of_undying", "minecraft:shulker_box", "minecraft:lodestone",
+], _target_stage_counts("achievements"))
+ITEMS["apotheosis"] = _generated_rows([
+    "apotheosis:gem_dust", "irons_spellbooks:chronicle", "apotheosis:salvaging_table", "apotheosis:reforging_table",
+    "apotheosis:common_material", "apotheosis:gem", "apotheosis:gem_cutting_table", "apotheosis:uncommon_material",
+    "apotheosis:sigil_of_socketing", "apotheosis:gem_case", "apotheosis:epic_material", "apotheosis:potion_charm",
+    "apothic_enchanting:library", "apothic_enchanting:hellshelf", "apothic_enchanting:scrap_tome", "apotheosis:mythic_material",
+], _target_stage_counts("apotheosis"))
+ITEMS["cataclysm"] = _generated_rows([
+    "cataclysm:witherite_ingot", "minecraft:golden_apple", "cataclysm:burning_ashes", "cataclysm:monstrous_horn",
+    "cataclysm:lava_power_cell", "cataclysm:altar_of_fire", "cataclysm:ignitium_ingot", "cataclysm:the_incinerator",
+    "cataclysm:bulwark_of_the_flame", "cataclysm:blazing_grips", "cataclysm:void_core", "cataclysm:void_scatter_arrow",
+    "cataclysm:infernal_forge", "cataclysm:void_forge", "cataclysm:mech_eye", "cataclysm:cursed_bow",
+    "cataclysm:music_disc_scylla",
+], _target_stage_counts("cataclysm"))
+ITEMS["draconic"] = _generated_rows([
+    "draconicevolution:draconium_ingot", "draconicevolution:draconium_dust", "draconicevolution:energy_core",
+    "draconicevolution:reactor_core", "draconicevolution:dragon_heart", "draconicevolution:wyvern_core",
+    "draconicevolution:draconic_energy_core", "draconicevolution:draconic_hoe", "draconicevolution:draconic_chestpiece",
+    "draconicevolution:flux_gate", "draconicevolution:particle_generator", "draconicevolution:wyvern_wireless_crystal",
+    "draconicevolution:chaos_shard", "draconicevolution:awakened_core", "draconicevolution:draconic_staff",
+    "draconicevolution:chaotic_shovel",
+], _target_stage_counts("draconic"))
 
 
 def _pool(filename: str) -> list[str]:

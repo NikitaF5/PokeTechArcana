@@ -42,7 +42,13 @@ MYSTICAL_CHAPTER_ID = "5A2ECAFE10003"
 POKEMON_CHAPTER_ID = "5A2ECAFE20001"
 TRAINERS_CHAPTER_ID = "5A2ECAFE20002"
 ENDGAME_CHAPTER_ID = "5A2ECAFE20003"
-PACKAGE_VERSION = "1.8.0"
+APOTHEOSIS_CHAPTER_ID = "5A2ECAFE30001"
+CATACLYSM_CHAPTER_ID = "5A2ECAFE30002"
+DRACONIC_CHAPTER_ID = "5A2ECAFE30003"
+VAMPIRISM_CHAPTER_ID = "5A2ECAFE30004"
+COBBLEMON_ADVANCED_CHAPTER_ID = "5A2ECAFE30005"
+ACHIEVEMENTS_CHAPTER_ID = "5A2ECAFE30006"
+PACKAGE_VERSION = "1.10.0"
 
 
 @dataclass(frozen=True)
@@ -195,6 +201,12 @@ MYSTICAL = next_chapters.build_chapter("mystical", Quest)
 POKEMON = next_chapters.build_chapter("pokemon", Quest)
 TRAINERS = next_chapters.build_chapter("trainers", Quest)
 ENDGAME = next_chapters.build_chapter("endgame", Quest)
+APOTHEOSIS = next_chapters.build_chapter("apotheosis", Quest)
+CATACLYSM = next_chapters.build_chapter("cataclysm", Quest)
+DRACONIC = next_chapters.build_chapter("draconic", Quest)
+VAMPIRISM = next_chapters.build_chapter("vampirism", Quest)
+COBBLEMON_ADVANCED = next_chapters.build_chapter("cobblemon_advanced", Quest)
+ACHIEVEMENTS = next_chapters.build_chapter("achievements", Quest)
 MILESTONES = {
     "skyblock": {"start": 1, "sieve": 2, "cobble": 3, "ores": 4, "generator": 5, "autohammer": 6, "core": 7},
     "mekanism": {"osmium": 1, "enrichment": 2, "cables": 3, "basicfactory": 4, "purification": 5, "wind": 6, "fusion": 7},
@@ -212,6 +224,12 @@ MILESTONES = {
     "pokemon": {f"s{i:02d}_01": i for i in range(1, 8)},
     "trainers": {f"s{i:02d}_01": i for i in range(1, 7)},
     "endgame": {f"s{i:02d}_01": i for i in range(1, 7)},
+    "apotheosis": {f"s{i:02d}_01": i for i in range(1, 7)},
+    "cataclysm": {f"s{i:02d}_01": i for i in range(1, 7)},
+    "draconic": {f"s{i:02d}_01": i for i in range(1, 6)},
+    "vampirism": {f"s{i:02d}_01": i for i in range(1, 7)},
+    "cobblemon_advanced": {f"s{i:02d}_01": i for i in range(1, 7)},
+    "achievements": {f"s{i:02d}_01": i for i in range(1, 6)},
 }
 
 
@@ -558,6 +576,12 @@ def write_build():
     validate(POKEMON, "pokemon", 78)
     validate(TRAINERS, "trainers", 66)
     validate(ENDGAME, "endgame", 92)
+    validate(APOTHEOSIS, "apotheosis", 76)
+    validate(CATACLYSM, "cataclysm", 70)
+    validate(DRACONIC, "draconic", 88)
+    validate(VAMPIRISM, "vampirism", 72)
+    validate(COBBLEMON_ADVANCED, "cobblemon_advanced", 80)
+    validate(ACHIEVEMENTS, "achievements", 64)
     if BUILD.exists():
         shutil.rmtree(BUILD)
     (QUESTS / "chapters").mkdir(parents=True)
@@ -605,6 +629,12 @@ def write_build():
     pokemon_title = next_chapters.CHAPTERS["pokemon"]["title"]
     trainers_title = next_chapters.CHAPTERS["trainers"]["title"]
     endgame_title = next_chapters.CHAPTERS["endgame"]["title"]
+    apotheosis_title = next_chapters.CHAPTERS["apotheosis"]["title"]
+    cataclysm_title = next_chapters.CHAPTERS["cataclysm"]["title"]
+    draconic_title = next_chapters.CHAPTERS["draconic"]["title"]
+    vampirism_title = next_chapters.CHAPTERS["vampirism"]["title"]
+    cobblemon_advanced_title = next_chapters.CHAPTERS["cobblemon_advanced"]["title"]
+    achievements_title = next_chapters.CHAPTERS["achievements"]["title"]
     (QUESTS / "chapters" / "skyblock.snbt").write_text(make_chapter("skyblock", SKY_CHAPTER_ID, sky_title, 0, "exdeorum:oak_sieve", SKY, "poketech:textures/quests/backgrounds/skyblock_book.png"), encoding="utf-8")
     (QUESTS / "chapters" / "create.snbt").write_text(make_chapter("create", CREATE_CHAPTER_ID, create_title, 1, "create:mechanical_press", CREATE, "poketech:textures/quests/backgrounds/create_book.png"), encoding="utf-8")
     (QUESTS / "chapters" / "immersive.snbt").write_text(make_chapter("immersive", IMMERSIVE_CHAPTER_ID, immersive_title, 2, "immersiveengineering:hammer", IMMERSIVE, "poketech:textures/quests/backgrounds/immersive_book.png"), encoding="utf-8")
@@ -621,6 +651,12 @@ def write_build():
     (QUESTS / "chapters" / "pokemon.snbt").write_text(make_chapter("pokemon", POKEMON_CHAPTER_ID, pokemon_title, 13, "cobblemon:poke_ball", POKEMON, "poketech:textures/quests/backgrounds/pokemon_book.png"), encoding="utf-8")
     (QUESTS / "chapters" / "trainers.snbt").write_text(make_chapter("trainers", TRAINERS_CHAPTER_ID, trainers_title, 14, "rctmod:trainer_card", TRAINERS, "poketech:textures/quests/backgrounds/trainers_book.png"), encoding="utf-8")
     (QUESTS / "chapters" / "endgame.snbt").write_text(make_chapter("endgame", ENDGAME_CHAPTER_ID, endgame_title, 15, "draconicevolution:chaos_shard", ENDGAME, "poketech:textures/quests/backgrounds/endgame_book.png"), encoding="utf-8")
+    (QUESTS / "chapters" / "apotheosis.snbt").write_text(make_chapter("apotheosis", APOTHEOSIS_CHAPTER_ID, apotheosis_title, 16, "apotheosis:reforging_table", APOTHEOSIS, "poketech:textures/quests/backgrounds/apotheosis_book.png"), encoding="utf-8")
+    (QUESTS / "chapters" / "cataclysm.snbt").write_text(make_chapter("cataclysm", CATACLYSM_CHAPTER_ID, cataclysm_title, 17, "cataclysm:witherite_ingot", CATACLYSM, "poketech:textures/quests/backgrounds/cataclysm_book.png"), encoding="utf-8")
+    (QUESTS / "chapters" / "draconic.snbt").write_text(make_chapter("draconic", DRACONIC_CHAPTER_ID, draconic_title, 18, "draconicevolution:chaos_shard", DRACONIC, "poketech:textures/quests/backgrounds/draconic_book.png"), encoding="utf-8")
+    (QUESTS / "chapters" / "vampirism.snbt").write_text(make_chapter("vampirism", VAMPIRISM_CHAPTER_ID, vampirism_title, 19, "vampirism:vampire_book", VAMPIRISM, "poketech:textures/quests/backgrounds/vampirism_book.png"), encoding="utf-8")
+    (QUESTS / "chapters" / "cobblemon_advanced.snbt").write_text(make_chapter("cobblemon_advanced", COBBLEMON_ADVANCED_CHAPTER_ID, cobblemon_advanced_title, 20, "cobblemon:master_ball", COBBLEMON_ADVANCED, "poketech:textures/quests/backgrounds/cobblemon_advanced_book.png"), encoding="utf-8")
+    (QUESTS / "chapters" / "achievements.snbt").write_text(make_chapter("achievements", ACHIEVEMENTS_CHAPTER_ID, achievements_title, 21, "minecraft:nether_star", ACHIEVEMENTS, "poketech:textures/quests/backgrounds/achievements_book.png"), encoding="utf-8")
 
     sky_lang = language_for("skyblock", SKY_CHAPTER_ID, sky_title, SKY)
     mek_lang = language_for("mekanism", MEK_CHAPTER_ID, mek_title, MEK)
@@ -638,8 +674,14 @@ def write_build():
     pokemon_lang = language_for("pokemon", POKEMON_CHAPTER_ID, pokemon_title, POKEMON)
     trainers_lang = language_for("trainers", TRAINERS_CHAPTER_ID, trainers_title, TRAINERS)
     endgame_lang = language_for("endgame", ENDGAME_CHAPTER_ID, endgame_title, ENDGAME)
+    apotheosis_lang = language_for("apotheosis", APOTHEOSIS_CHAPTER_ID, apotheosis_title, APOTHEOSIS)
+    cataclysm_lang = language_for("cataclysm", CATACLYSM_CHAPTER_ID, cataclysm_title, CATACLYSM)
+    draconic_lang = language_for("draconic", DRACONIC_CHAPTER_ID, draconic_title, DRACONIC)
+    vampirism_lang = language_for("vampirism", VAMPIRISM_CHAPTER_ID, vampirism_title, VAMPIRISM)
+    cobblemon_advanced_lang = language_for("cobblemon_advanced", COBBLEMON_ADVANCED_CHAPTER_ID, cobblemon_advanced_title, COBBLEMON_ADVANCED)
+    achievements_lang = language_for("achievements", ACHIEVEMENTS_CHAPTER_ID, achievements_title, ACHIEVEMENTS)
     group_lang = "{\n\tchapter_group.%s.title: %s\n}\n" % (GROUP_ID, q("PokeTech Arcana · Книга развития"))
-    merged = merge_languages(group_lang, sky_lang, create_lang, immersive_lang, mek_lang, ae2_lang, appmek_lang, ars_lang, occult_lang, evil_lang, fna_lang, irons_lang, farmer_lang, mystical_lang, pokemon_lang, trainers_lang, endgame_lang)
+    merged = merge_languages(group_lang, sky_lang, create_lang, immersive_lang, mek_lang, ae2_lang, appmek_lang, ars_lang, occult_lang, evil_lang, fna_lang, irons_lang, farmer_lang, mystical_lang, pokemon_lang, trainers_lang, endgame_lang, apotheosis_lang, cataclysm_lang, draconic_lang, vampirism_lang, cobblemon_advanced_lang, achievements_lang)
     for locale in ("ru_ru", "en_us"):
         (QUESTS / "lang" / f"{locale}.snbt").write_text(merged, encoding="utf-8")
         split = QUESTS / "lang" / locale
@@ -650,7 +692,9 @@ def write_build():
             (MEK_CHAPTER_ID, mek_title), (AE2_CHAPTER_ID, ae2_title), (APPMEK_CHAPTER_ID, appmek_title), (ARS_CHAPTER_ID, ars_title),
             (OCCULT_CHAPTER_ID, occult_title), (EVIL_CHAPTER_ID, evil_title), (FNA_CHAPTER_ID, fna_title),
             (IRONS_CHAPTER_ID, irons_title), (FARMER_CHAPTER_ID, farmer_title), (MYSTICAL_CHAPTER_ID, mystical_title),
-            (POKEMON_CHAPTER_ID, pokemon_title), (TRAINERS_CHAPTER_ID, trainers_title), (ENDGAME_CHAPTER_ID, endgame_title)
+            (POKEMON_CHAPTER_ID, pokemon_title), (TRAINERS_CHAPTER_ID, trainers_title), (ENDGAME_CHAPTER_ID, endgame_title),
+            (APOTHEOSIS_CHAPTER_ID, apotheosis_title), (CATACLYSM_CHAPTER_ID, cataclysm_title), (DRACONIC_CHAPTER_ID, draconic_title),
+            (VAMPIRISM_CHAPTER_ID, vampirism_title), (COBBLEMON_ADVANCED_CHAPTER_ID, cobblemon_advanced_title), (ACHIEVEMENTS_CHAPTER_ID, achievements_title)
         )) + "\n}\n"
         (split / "chapter.snbt").write_text(chapter_lang, encoding="utf-8")
         sky_quest_lang = "{\n" + "\n".join(sky_lang.strip().splitlines()[2:-1]) + "\n}\n"
@@ -669,6 +713,12 @@ def write_build():
         pokemon_quest_lang = "{\n" + "\n".join(pokemon_lang.strip().splitlines()[2:-1]) + "\n}\n"
         trainers_quest_lang = "{\n" + "\n".join(trainers_lang.strip().splitlines()[2:-1]) + "\n}\n"
         endgame_quest_lang = "{\n" + "\n".join(endgame_lang.strip().splitlines()[2:-1]) + "\n}\n"
+        apotheosis_quest_lang = "{\n" + "\n".join(apotheosis_lang.strip().splitlines()[2:-1]) + "\n}\n"
+        cataclysm_quest_lang = "{\n" + "\n".join(cataclysm_lang.strip().splitlines()[2:-1]) + "\n}\n"
+        draconic_quest_lang = "{\n" + "\n".join(draconic_lang.strip().splitlines()[2:-1]) + "\n}\n"
+        vampirism_quest_lang = "{\n" + "\n".join(vampirism_lang.strip().splitlines()[2:-1]) + "\n}\n"
+        cobblemon_advanced_quest_lang = "{\n" + "\n".join(cobblemon_advanced_lang.strip().splitlines()[2:-1]) + "\n}\n"
+        achievements_quest_lang = "{\n" + "\n".join(achievements_lang.strip().splitlines()[2:-1]) + "\n}\n"
         (split / "chapters" / "skyblock.snbt").write_text(sky_quest_lang, encoding="utf-8")
         (split / "chapters" / "mekanism.snbt").write_text(mek_quest_lang, encoding="utf-8")
         (split / "chapters" / "create.snbt").write_text(create_quest_lang, encoding="utf-8")
@@ -685,6 +735,12 @@ def write_build():
         (split / "chapters" / "pokemon.snbt").write_text(pokemon_quest_lang, encoding="utf-8")
         (split / "chapters" / "trainers.snbt").write_text(trainers_quest_lang, encoding="utf-8")
         (split / "chapters" / "endgame.snbt").write_text(endgame_quest_lang, encoding="utf-8")
+        (split / "chapters" / "apotheosis.snbt").write_text(apotheosis_quest_lang, encoding="utf-8")
+        (split / "chapters" / "cataclysm.snbt").write_text(cataclysm_quest_lang, encoding="utf-8")
+        (split / "chapters" / "draconic.snbt").write_text(draconic_quest_lang, encoding="utf-8")
+        (split / "chapters" / "vampirism.snbt").write_text(vampirism_quest_lang, encoding="utf-8")
+        (split / "chapters" / "cobblemon_advanced.snbt").write_text(cobblemon_advanced_quest_lang, encoding="utf-8")
+        (split / "chapters" / "achievements.snbt").write_text(achievements_quest_lang, encoding="utf-8")
 
     ftb_assets = ASSETS / "ftbquests"
     ftb_assets.mkdir(parents=True)
@@ -707,8 +763,14 @@ def write_build():
     make_atlas_background(tex / "backgrounds" / "pokemon_book.png", "POKÉMON: ПУТЬ ТРЕНЕРА", "pokemon", POKEMON, [(78, 134, 170), (208, 139, 61), (88, 151, 102), (154, 83, 96)])
     make_atlas_background(tex / "backgrounds" / "trainers_book.png", "ТРЕНЕРЫ И ДАНЖИ: ИСПЫТАНИЯ МИРОВ", "trainers", TRAINERS, [(155, 91, 85), (184, 139, 72), (77, 112, 143), (114, 78, 128)])
     make_atlas_background(tex / "backgrounds" / "endgame_book.png", "ЭНДГЕЙМ: ЯДРО POKETECH ARCANA", "endgame", ENDGAME, [(118, 89, 159), (180, 126, 67), (72, 126, 158), (146, 70, 105)])
+    make_atlas_background(tex / "backgrounds" / "apotheosis_book.png", "APOTHEOSIS: КУЗНИЦА ГЕРОЯ", "apotheosis", APOTHEOSIS, [(120, 58, 83), (167, 75, 73), (74, 82, 123), (176, 126, 58)])
+    make_atlas_background(tex / "backgrounds" / "cataclysm_book.png", "CATACLYSM: ЦИТАДЕЛИ БОССОВ", "cataclysm", CATACLYSM, [(75, 132, 166), (212, 139, 57), (99, 151, 108), (148, 83, 125)])
+    make_atlas_background(tex / "backgrounds" / "draconic_book.png", "DRACONIC EVOLUTION: СЕРДЦЕ ХАОСА", "draconic", DRACONIC, [(112, 101, 62), (73, 121, 142), (153, 95, 55), (103, 77, 139)])
+    make_atlas_background(tex / "backgrounds" / "vampirism_book.png", "VAMPIRISM: ДВЕ ДОРОГИ НОЧИ", "vampirism", VAMPIRISM, [(143, 53, 79), (115, 80, 165), (62, 67, 111), (187, 117, 72)])
+    make_atlas_background(tex / "backgrounds" / "cobblemon_advanced_book.png", "COBBLEMON: МАСТЕРСТВО РЕГИОНА", "cobblemon_advanced", COBBLEMON_ADVANCED, [(57, 127, 146), (194, 131, 61), (77, 112, 143), (119, 81, 145)])
+    make_atlas_background(tex / "backgrounds" / "achievements_book.png", "ДОСТИЖЕНИЯ СЕРВЕРА: СОЗВЕЗДИЕ ГЕРОЯ", "achievements", ACHIEVEMENTS, [(154, 113, 53), (114, 86, 164), (64, 107, 127), (182, 78, 69)])
     palettes = [(36, 127, 160), (71, 127, 69), (123, 77, 149), (179, 100, 22), (71, 127, 69), (123, 77, 149), (179, 100, 22), (165, 79, 59), (57, 111, 168), (139, 90, 158), (163, 79, 87), (61, 122, 114), (118, 87, 168), (178, 111, 61), (77, 131, 166)]
-    for namespace, title in (("skyblock", "Skyblock"), ("mekanism", "Mekanism"), ("create", "Create"), ("immersive", "Immersive Engineering"), ("ae2", "Applied Energistics 2"), ("appmek", "Applied Mekanistics"), ("ars", "Ars Nouveau"), ("occult", "Occultism"), ("evil", "EvilCraft"), ("fna", "Forbidden & Arcanus"), ("irons", "Iron's Spells"), ("farmer", "Farmer's Delight"), ("mystical", "Mystical Agriculture"), ("pokemon", "Pokémon"), ("trainers", "Тренеры и данжи"), ("endgame", "Эндгейм")):
+    for namespace, title in (("skyblock", "Skyblock"), ("mekanism", "Mekanism"), ("create", "Create"), ("immersive", "Immersive Engineering"), ("ae2", "Applied Energistics 2"), ("appmek", "Applied Mekanistics"), ("ars", "Ars Nouveau"), ("occult", "Occultism"), ("evil", "EvilCraft"), ("fna", "Forbidden & Arcanus"), ("irons", "Iron's Spells"), ("farmer", "Farmer's Delight"), ("mystical", "Mystical Agriculture"), ("pokemon", "Pokémon"), ("trainers", "Тренеры и данжи"), ("endgame", "Эндгейм"), ("apotheosis", "Apotheosis"), ("cataclysm", "Cataclysm"), ("draconic", "Draconic Evolution"), ("vampirism", "Vampirism"), ("cobblemon_advanced", "Cobblemon: мастерство"), ("achievements", "Достижения сервера")):
         names = ({
             "skyblock": ["Остров", "Просеивание", "Камень", "Ресурсы", "Измерения", "Автоматизация", "Переход"],
             "mekanism": ["Основа", "Машины", "Сети", "Фабрики", "Химия", "Атом", "Финал"],
@@ -726,6 +788,12 @@ def write_build():
             "pokemon": next_chapters.stage_names("pokemon"),
             "trainers": next_chapters.stage_names("trainers"),
             "endgame": next_chapters.stage_names("endgame"),
+            "apotheosis": next_chapters.stage_names("apotheosis"),
+            "cataclysm": next_chapters.stage_names("cataclysm"),
+            "draconic": next_chapters.stage_names("draconic"),
+            "vampirism": next_chapters.stage_names("vampirism"),
+            "cobblemon_advanced": next_chapters.stage_names("cobblemon_advanced"),
+            "achievements": next_chapters.stage_names("achievements"),
         }[namespace])
         for stage, (name, color) in enumerate(zip(names, palettes), 1):
             make_guide(tex / "guides" / f"{namespace}_{stage}.png", f"{title} · {name}", "Схема этапа и ключевой производственный поток", color, stage)
@@ -746,7 +814,7 @@ def write_build():
             for path in base.rglob("*"):
                 if path.is_file():
                     archive.write(path, path.relative_to(BUILD))
-    print(f"Built {len(SKY)} Skyblock + {len(CREATE)} Create + {len(IMMERSIVE)} Immersive Engineering + {len(MEK)} Mekanism + {len(AE2)} AE2 + {len(APPMEK)} Applied Mekanistics + {len(ARS)} Ars Nouveau + {len(OCCULT)} Occultism + {len(EVIL)} EvilCraft + {len(FNA)} Forbidden & Arcanus + {len(IRONS)} Iron's Spells + {len(FARMER)} Farmer's Delight + {len(MYSTICAL)} Mystical Agriculture + {len(POKEMON)} Pokemon + {len(TRAINERS)} Trainers + {len(ENDGAME)} Endgame quests")
+    print(f"Built {len(SKY)} Skyblock + {len(CREATE)} Create + {len(IMMERSIVE)} Immersive Engineering + {len(MEK)} Mekanism + {len(AE2)} AE2 + {len(APPMEK)} Applied Mekanistics + {len(ARS)} Ars Nouveau + {len(OCCULT)} Occultism + {len(EVIL)} EvilCraft + {len(FNA)} Forbidden & Arcanus + {len(IRONS)} Iron's Spells + {len(FARMER)} Farmer's Delight + {len(MYSTICAL)} Mystical Agriculture + {len(POKEMON)} Pokemon + {len(TRAINERS)} Trainers + {len(ENDGAME)} Endgame + {len(APOTHEOSIS)} Apotheosis + {len(CATACLYSM)} Cataclysm + {len(DRACONIC)} Draconic Evolution + {len(VAMPIRISM)} Vampirism + {len(COBBLEMON_ADVANCED)} Cobblemon advanced + {len(ACHIEVEMENTS)} Achievements quests")
     print(f"Server package: {package} ({package.stat().st_size} bytes)")
 
 
