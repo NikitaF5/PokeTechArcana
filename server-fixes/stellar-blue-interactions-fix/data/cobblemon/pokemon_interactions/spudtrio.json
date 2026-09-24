@@ -1,0 +1,9 @@
+{
+  "requirements": [
+    {
+      "variant": "properties",
+      "target": "spudtrio"
+    }
+  ],
+  "interactions": []
+}

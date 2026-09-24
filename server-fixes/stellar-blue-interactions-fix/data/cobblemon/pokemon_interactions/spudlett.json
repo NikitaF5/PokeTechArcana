@@ -1,0 +1,9 @@
+{
+  "requirements": [
+    {
+      "variant": "properties",
+      "target": "spudlett"
+    }
+  ],
+  "interactions": []
+}
