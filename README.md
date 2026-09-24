@@ -50,10 +50,10 @@ python build_release.py --pack-dir "C:\путь\к\сборке" --tag pack-v1.0
 [SERVER-RECOVERY.md](SERVER-RECOVERY.md).
 
 Текущая серверная база: Minecraft 1.21.1, NeoForge 21.1.250, Cobblemon 1.8.0.
-В `pack-v1.3.2` добавлен Cobblemon Stellar Blue 1.5: категория Lumora с
-Tigriff, Emberam и Equelpi, остальные fakemon аддона, их модели и spawn pools.
-Сервер требует официальный ресурс-пак Stellar Blue с Modrinth, поэтому клиент
-получает те же модели и текстуры до открытия окна выбора стартовика.
+В `pack-v1.4.0` добавлена полноценная ветка Skyblock: Ex Deorum 3.12,
+Ex Machinis 4.0.3, ручное и автоматическое получение ресурсов, интеграция с
+Cobblemon, русская справка `/skyguide` и защита всех миров вне личных островов.
+Stellar Blue 1.5 и категория Lumora из версии 1.3.2 сохранены.
 
 ## Как это выглядит у друзей
 Запустил exe → ввёл ник → двинул ползунок памяти → ИГРАТЬ.
