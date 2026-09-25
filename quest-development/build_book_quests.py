@@ -25,7 +25,21 @@ CLIENT_PACK = WORKSPACE / "skyblock-update" / "pack"
 # FTB Quests 2101.1.27 parses IDs with Long.parseLong(..., 16), so the
 # highest bit must stay clear. IDs beginning with 8-F are silently replaced
 # at load time, which breaks translations and dependency references.
-GROUP_ID = "271C0B00CAFE1001"
+GROUPS = (
+    ("271C0B00CAFE1101", "I · Начало и остров", "minecraft:oak_sapling", ("skyblock", "farmer", "mystical", "builder")),
+    ("271C0B00CAFE1102", "II · Технологии и автоматизация", "create:precision_mechanism", ("create", "createplus", "immersive", "mekanism", "mekplus", "oritech", "ae2", "appmek", "silentgear", "integration")),
+    ("271C0B00CAFE1103", "III · Магия и ритуалы", "ars_nouveau:archmage_spell_book", ("ars", "arsplus", "occult", "evil", "fna", "irons", "vampirism")),
+    ("271C0B00CAFE1104", "IV · Покемоны и тренеры", "cobblemon:poke_ball", ("pokemon", "cobblemon_advanced", "cobbleplus", "trainers", "services")),
+    ("271C0B00CAFE1105", "V · Исследование миров", "minecraft:filled_map", ("traveler", "atlas", "starlight", "wildlife", "swem", "minecolonies")),
+    ("271C0B00CAFE1106", "VI · Битвы, боссы и снаряжение", "minecraft:netherite_sword", ("epicfight", "apotheosis", "artifacts", "relics", "origins", "threats", "worldbosses", "cataclysm", "draconic")),
+    ("271C0B00CAFE1107", "VII · Серверный путь и финал", "minecraft:nether_star", ("achievements", "community", "endgame", "finale")),
+)
+CHAPTER_GROUP_FOR = {namespace: group_id for group_id, _, _, namespaces in GROUPS for namespace in namespaces}
+CHAPTER_ORDER_IN_GROUP = {
+    namespace: order
+    for _, _, _, namespaces in GROUPS
+    for order, namespace in enumerate(namespaces)
+}
 SKY_CHAPTER_ID = "271C0B00CAFE2001"
 MEK_CHAPTER_ID = "1A2E2B8D9E0A2001"
 CREATE_CHAPTER_ID = "03C0EA7ECAFE3001"
@@ -71,7 +85,7 @@ ATLAS_CHAPTER_ID = "0005A2ECAFE70002"
 THREATS_CHAPTER_ID = "0005A2ECAFE70003"
 INTEGRATION_CHAPTER_ID = "0005A2ECAFE70004"
 FINALE_CHAPTER_ID = "0005A2ECAFE70005"
-PACKAGE_VERSION = "1.15.1"
+PACKAGE_VERSION = "1.15.2"
 
 
 @dataclass(frozen=True)
@@ -362,7 +376,7 @@ def make_chapter(namespace: str, chapter_id: str, title: str, order: int, icon: 
         "\tdefault_min_width: 270",
         "\tdefault_quest_shape: \"circle\"",
         f"\tfilename: {q(namespace)}",
-        f"\tgroup: {q(GROUP_ID)}",
+        f"\tgroup: {q(CHAPTER_GROUP_FOR[namespace])}",
         f"\ticon: {{ id: {q(icon)} }}",
         f"\tid: {q(chapter_id)}",
         f"\ttitle: {q(title)}",
@@ -375,7 +389,7 @@ def make_chapter(namespace: str, chapter_id: str, title: str, order: int, icon: 
         f"\t\tx: {cx:.2f}d",
         f"\t\ty: {cy:.2f}d",
         "\t}]",
-        f"\torder_index: {order}",
+        f"\torder_index: {CHAPTER_ORDER_IN_GROUP[namespace]}",
         "\tquest_links: [ ]",
         "\tquests: [",
         "\n".join(make_quest(namespace, quest) for quest in quests),
@@ -705,7 +719,11 @@ def write_build():
 \tversion: 13
 }
 """
-    groups = f'{{\n\tchapter_groups: [{{ icon: {{ id: "minecraft:book" }}, id: "{GROUP_ID}", title: "PokeTech Arcana · Книга развития" }}]\n}}\n'
+    group_rows = [
+        f'\t\t{{ icon: {{ id: {q(icon)} }}, id: {q(group_id)}, title: {q(title)} }}'
+        for group_id, title, icon, _ in GROUPS
+    ]
+    groups = "{\n\tchapter_groups: [\n" + ",\n".join(group_rows) + "\n\t]\n}\n"
     (QUESTS / "data.snbt").write_text(data, encoding="utf-8")
     (QUESTS / "chapter_groups.snbt").write_text(groups, encoding="utf-8")
     sky_title = "Skyblock: из пустоты к производству"
@@ -717,7 +735,9 @@ def write_build():
     ars_title = next_chapters.CHAPTERS["ars"]["title"]
     occult_title = next_chapters.CHAPTERS["occult"]["title"]
     evil_title = next_chapters.CHAPTERS["evil"]["title"]
-    fna_title = next_chapters.CHAPTERS["fna"]["title"]
+    # FTB Library treats ampersands as formatting markers. A literal ampersand
+    # before whitespace must be escaped or the chapter list shows an error.
+    fna_title = next_chapters.CHAPTERS["fna"]["title"].replace(" & ", r" \& ")
     irons_title = next_chapters.CHAPTERS["irons"]["title"]
     farmer_title = next_chapters.CHAPTERS["farmer"]["title"]
     mystical_title = next_chapters.CHAPTERS["mystical"]["title"]
@@ -844,7 +864,9 @@ def write_build():
     threats_lang = language_for("threats", THREATS_CHAPTER_ID, threats_title, THREATS)
     integration_lang = language_for("integration", INTEGRATION_CHAPTER_ID, integration_title, INTEGRATION)
     finale_lang = language_for("finale", FINALE_CHAPTER_ID, finale_title, FINALE)
-    group_lang = "{\n\tchapter_group.%s.title: %s\n}\n" % (GROUP_ID, q("PokeTech Arcana · Книга развития"))
+    group_lang = "{\n" + "\n".join(
+        f"\tchapter_group.{group_id}.title: {q(title)}" for group_id, title, _, _ in GROUPS
+    ) + "\n}\n"
     merged = merge_languages(group_lang, sky_lang, create_lang, immersive_lang, mek_lang, ae2_lang, appmek_lang, ars_lang, occult_lang, evil_lang, fna_lang, irons_lang, farmer_lang, mystical_lang, pokemon_lang, trainers_lang, endgame_lang, apotheosis_lang, cataclysm_lang, draconic_lang, vampirism_lang, cobblemon_advanced_lang, achievements_lang, artifacts_lang, relics_lang, epicfight_lang, minecolonies_lang, oritech_lang, silentgear_lang, cobbleplus_lang, worldbosses_lang, createplus_lang, traveler_lang, builder_lang, swem_lang, origins_lang, starlight_lang, wildlife_lang, arsplus_lang, mekplus_lang, community_lang, services_lang, atlas_lang, threats_lang, integration_lang, finale_lang)
     for locale in ("ru_ru", "en_us"):
         (QUESTS / "lang" / f"{locale}.snbt").write_text(merged, encoding="utf-8")
