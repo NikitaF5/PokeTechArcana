@@ -4,6 +4,7 @@ import re
 from pathlib import Path
 
 import build_expansion_chapters as expansion_chapters
+import build_next_chapters as next_chapters_extra
 
 
 ROOT = Path(__file__).resolve().parent
@@ -335,6 +336,7 @@ CHAPTERS = {
 # Expansion chapters are kept in their own data module so this already-large
 # catalog stays reviewable.  They use the same renderer and ID scheme.
 CHAPTERS.update(expansion_chapters.CHAPTERS)
+CHAPTERS.update(next_chapters_extra.CHAPTERS)
 
 
 # Each objective uses a real registered item that matches the lesson instead of
@@ -419,6 +421,8 @@ def _target_stage_counts(namespace: str) -> list[int]:
 
 
 for _namespace, _pool in expansion_chapters.ITEM_POOLS.items():
+    ITEMS[_namespace] = _generated_rows(_pool, _target_stage_counts(_namespace))
+for _namespace, _pool in next_chapters_extra.ITEM_POOLS.items():
     ITEMS[_namespace] = _generated_rows(_pool, _target_stage_counts(_namespace))
 
 
