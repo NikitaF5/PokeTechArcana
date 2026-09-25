@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import math
 import random
+import re
 import shutil
 import zipfile
 from dataclasses import dataclass
@@ -85,7 +86,7 @@ ATLAS_CHAPTER_ID = "0005A2ECAFE70002"
 THREATS_CHAPTER_ID = "0005A2ECAFE70003"
 INTEGRATION_CHAPTER_ID = "0005A2ECAFE70004"
 FINALE_CHAPTER_ID = "0005A2ECAFE70005"
-PACKAGE_VERSION = "1.15.2"
+PACKAGE_VERSION = "1.15.3"
 
 
 @dataclass(frozen=True)
@@ -498,42 +499,56 @@ def make_atlas_background(path: Path, title: str, namespace: str, quests: list[Q
         return ((x - min_x) / (max_x - min_x) * image_w,
                 (y - min_y) / (max_y - min_y) * image_h)
 
-    centers = next_chapters.CHAPTERS[namespace]["centers"]
-    mapped = [point(x, y) for x, y in centers]
-    for index, ((x, y), stage) in enumerate(zip(mapped, next_chapters.CHAPTERS[namespace]["stages"])):
+    config = next_chapters.CHAPTERS[namespace]
+    stage_count = len(config["stages"])
+    stage_quests: list[list[Quest]] = [[] for _ in range(stage_count)]
+    for quest in quests:
+        match = re.fullmatch(r"s(\d{2})_\d{2}", quest.key)
+        if not match:
+            raise ValueError(f"{namespace}: quest {quest.key!r} has no stage number")
+        stage_index = int(match.group(1)) - 1
+        if not 0 <= stage_index < stage_count:
+            raise ValueError(f"{namespace}: invalid stage in quest {quest.key!r}")
+        stage_quests[stage_index].append(quest)
+    if any(not cluster for cluster in stage_quests):
+        raise ValueError(f"{namespace}: an empty stage cannot be decorated")
+
+    # The first quest is the stage root used by FTB Quests dependency lines.
+    # Draw the coloured routes between those exact roots so the background
+    # follows the same graph that the player sees in the quest screen.
+    roots = [next(quest for quest in cluster if quest.key.endswith("_01")) for cluster in stage_quests]
+    mapped_roots = [point(quest.x, quest.y) for quest in roots]
+    stage_parents = config.get("stage_parents")
+    for index in range(stage_count):
+        parents = stage_parents[index] if stage_parents is not None else ([] if index == 0 else [index - 1])
+        for parent in parents:
+            x1, y1 = mapped_roots[parent]
+            x2, y2 = mapped_roots[index]
+            color = palette[index % len(palette)]
+            draw.line((x1, y1, x2, y2), fill=(*color, 72), width=14)
+
+    # Fit every zone to its actual quest cluster.  The earlier fixed radii
+    # left fan, ring, grid and diamond layouts outside their own circles.
+    for index, (cluster, stage) in enumerate(zip(stage_quests, config["stages"])):
         color = palette[index % len(palette)]
-        # Keep decorative zones close to their quest cluster.  Oversized
-        # ellipses used to cover the title and neighboring branches in wide
-        # chapters, which made the parchment look broken in the game UI.
-        radius_x = max(50, image_w / (len(centers) * 3.4))
-        radius_y = max(58, image_h / 8.0)
-        draw.ellipse((x - radius_x, y - radius_y, x + radius_x, y + radius_y),
+        points = [point(quest.x, quest.y) for quest in cluster]
+        xs = [xy[0] for xy in points]
+        ys = [xy[1] for xy in points]
+        pad_x = max(22, image_w / width_units * 1.35)
+        pad_y = max(22, image_h / height_units * 1.35)
+        left, right = min(xs) - pad_x, max(xs) + pad_x
+        top, bottom = min(ys) - pad_y, max(ys) + pad_y
+        x, y = (left + right) / 2, (top + bottom) / 2
+        draw.ellipse((left, top, right, bottom),
                      fill=(*color, 12), outline=(*color, 75), width=3)
         label = stage[1]
         bbox = draw.textbbox((0, 0), label, font=font(15, True))
-        draw.rounded_rectangle((x - (bbox[2] - bbox[0]) / 2 - 10, y - radius_y + 8,
-                                x + (bbox[2] - bbox[0]) / 2 + 10, y - radius_y + 34),
+        label_y = max(8, top + 8)
+        draw.rounded_rectangle((x - (bbox[2] - bbox[0]) / 2 - 10, label_y,
+                                x + (bbox[2] - bbox[0]) / 2 + 10, label_y + 26),
                                radius=9, fill=(246, 240, 228, 185))
-        draw.text((x - (bbox[2] - bbox[0]) / 2, y - radius_y + 12), label,
+        draw.text((x - (bbox[2] - bbox[0]) / 2, label_y + 4), label,
                   font=font(15, True), fill=(*color, 205))
-    for index in range(len(mapped) - 1):
-        x1, y1 = mapped[index]
-        x2, y2 = mapped[index + 1]
-        color = palette[index % len(palette)]
-        if namespace == "appmek":
-            mid = (x1 + x2) / 2
-            draw.line((x1, y1, mid, y1, mid, y2, x2, y2), fill=(*color, 80), width=12, joint="curve")
-        else:
-            # A smooth-looking route assembled from short interpolated segments.
-            pts = []
-            for step in range(21):
-                t = step / 20
-                u = 1 - t
-                mx = (x1 + x2) / 2
-                px = u * u * u * x1 + 3 * u * u * t * mx + 3 * u * t * t * mx + t * t * t * x2
-                py = u * u * u * y1 + 3 * u * u * t * y1 + 3 * u * t * t * y2 + t * t * t * y2
-                pts.append((px, py))
-            draw.line(pts, fill=(*color, 80), width=12, joint="curve")
     path.parent.mkdir(parents=True, exist_ok=True)
     image.save(path)
 
