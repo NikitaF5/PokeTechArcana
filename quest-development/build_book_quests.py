@@ -66,7 +66,12 @@ WILDLIFE_CHAPTER_ID = "5A2ECAFE60002"
 ARSPLUS_CHAPTER_ID = "5A2ECAFE60003"
 MEKPLUS_CHAPTER_ID = "5A2ECAFE60004"
 COMMUNITY_CHAPTER_ID = "5A2ECAFE60005"
-PACKAGE_VERSION = "1.14.0"
+SERVICES_CHAPTER_ID = "5A2ECAFE70001"
+ATLAS_CHAPTER_ID = "5A2ECAFE70002"
+THREATS_CHAPTER_ID = "5A2ECAFE70003"
+INTEGRATION_CHAPTER_ID = "5A2ECAFE70004"
+FINALE_CHAPTER_ID = "5A2ECAFE70005"
+PACKAGE_VERSION = "1.15.0"
 
 
 @dataclass(frozen=True)
@@ -243,6 +248,11 @@ WILDLIFE = next_chapters.build_chapter("wildlife", Quest)
 ARSPLUS = next_chapters.build_chapter("arsplus", Quest)
 MEKPLUS = next_chapters.build_chapter("mekplus", Quest)
 COMMUNITY = next_chapters.build_chapter("community", Quest)
+SERVICES = next_chapters.build_chapter("services", Quest)
+ATLAS = next_chapters.build_chapter("atlas", Quest)
+THREATS = next_chapters.build_chapter("threats", Quest)
+INTEGRATION = next_chapters.build_chapter("integration", Quest)
+FINALE = next_chapters.build_chapter("finale", Quest)
 MILESTONES = {
     "skyblock": {"start": 1, "sieve": 2, "cobble": 3, "ores": 4, "generator": 5, "autohammer": 6, "core": 7},
     "mekanism": {"osmium": 1, "enrichment": 2, "cables": 3, "basicfactory": 4, "purification": 5, "wind": 6, "fusion": 7},
@@ -284,6 +294,11 @@ MILESTONES = {
     "arsplus": {f"s{i:02d}_01": i for i in range(1, 10)},
     "mekplus": {f"s{i:02d}_01": i for i in range(1, 11)},
     "community": {f"s{i:02d}_01": i for i in range(1, 9)},
+    "services": {f"s{i:02d}_01": i for i in range(1, 10)},
+    "atlas": {f"s{i:02d}_01": i for i in range(1, 10)},
+    "threats": {f"s{i:02d}_01": i for i in range(1, 10)},
+    "integration": {f"s{i:02d}_01": i for i in range(1, 11)},
+    "finale": {f"s{i:02d}_01": i for i in range(1, 13)},
 }
 
 
@@ -657,6 +672,11 @@ def write_build():
     validate(ARSPLUS, "arsplus", 90)
     validate(MEKPLUS, "mekplus", 100)
     validate(COMMUNITY, "community", 80)
+    validate(SERVICES, "services", 90)
+    validate(ATLAS, "atlas", 90)
+    validate(THREATS, "threats", 90)
+    validate(INTEGRATION, "integration", 100)
+    validate(FINALE, "finale", 120)
     if BUILD.exists():
         shutil.rmtree(BUILD)
     (QUESTS / "chapters").mkdir(parents=True)
@@ -728,6 +748,11 @@ def write_build():
     arsplus_title = next_chapters.CHAPTERS["arsplus"]["title"]
     mekplus_title = next_chapters.CHAPTERS["mekplus"]["title"]
     community_title = next_chapters.CHAPTERS["community"]["title"]
+    services_title = next_chapters.CHAPTERS["services"]["title"]
+    atlas_title = next_chapters.CHAPTERS["atlas"]["title"]
+    threats_title = next_chapters.CHAPTERS["threats"]["title"]
+    integration_title = next_chapters.CHAPTERS["integration"]["title"]
+    finale_title = next_chapters.CHAPTERS["finale"]["title"]
     (QUESTS / "chapters" / "skyblock.snbt").write_text(make_chapter("skyblock", SKY_CHAPTER_ID, sky_title, 0, "exdeorum:oak_sieve", SKY, "poketech:textures/quests/backgrounds/skyblock_book.png"), encoding="utf-8")
     (QUESTS / "chapters" / "create.snbt").write_text(make_chapter("create", CREATE_CHAPTER_ID, create_title, 1, "create:mechanical_press", CREATE, "poketech:textures/quests/backgrounds/create_book.png"), encoding="utf-8")
     (QUESTS / "chapters" / "immersive.snbt").write_text(make_chapter("immersive", IMMERSIVE_CHAPTER_ID, immersive_title, 2, "immersiveengineering:hammer", IMMERSIVE, "poketech:textures/quests/backgrounds/immersive_book.png"), encoding="utf-8")
@@ -768,6 +793,11 @@ def write_build():
     (QUESTS / "chapters" / "arsplus.snbt").write_text(make_chapter("arsplus", ARSPLUS_CHAPTER_ID, arsplus_title, 37, "ars_nouveau:archmage_spell_book", ARSPLUS, "poketech:textures/quests/backgrounds/arsplus_book.png"), encoding="utf-8")
     (QUESTS / "chapters" / "mekplus.snbt").write_text(make_chapter("mekplus", MEKPLUS_CHAPTER_ID, mekplus_title, 38, "mekanismgenerators:wind_generator", MEKPLUS, "poketech:textures/quests/backgrounds/mekplus_book.png"), encoding="utf-8")
     (QUESTS / "chapters" / "community.snbt").write_text(make_chapter("community", COMMUNITY_CHAPTER_ID, community_title, 39, "minecraft:bell", COMMUNITY, "poketech:textures/quests/backgrounds/community_book.png"), encoding="utf-8")
+    (QUESTS / "chapters" / "services.snbt").write_text(make_chapter("services", SERVICES_CHAPTER_ID, services_title, 40, "cobbledex:cobbledex_item", SERVICES, "poketech:textures/quests/backgrounds/services_book.png"), encoding="utf-8")
+    (QUESTS / "chapters" / "atlas.snbt").write_text(make_chapter("atlas", ATLAS_CHAPTER_ID, atlas_title, 41, "minecraft:filled_map", ATLAS, "poketech:textures/quests/backgrounds/atlas_book.png"), encoding="utf-8")
+    (QUESTS / "chapters" / "threats.snbt").write_text(make_chapter("threats", THREATS_CHAPTER_ID, threats_title, 42, "mutantmonsters:creeper_shard", THREATS, "poketech:textures/quests/backgrounds/threats_book.png"), encoding="utf-8")
+    (QUESTS / "chapters" / "integration.snbt").write_text(make_chapter("integration", INTEGRATION_CHAPTER_ID, integration_title, 43, "ae2:controller", INTEGRATION, "poketech:textures/quests/backgrounds/integration_book.png"), encoding="utf-8")
+    (QUESTS / "chapters" / "finale.snbt").write_text(make_chapter("finale", FINALE_CHAPTER_ID, finale_title, 44, "minecraft:nether_star", FINALE, "poketech:textures/quests/backgrounds/finale_book.png"), encoding="utf-8")
 
     sky_lang = language_for("skyblock", SKY_CHAPTER_ID, sky_title, SKY)
     mek_lang = language_for("mekanism", MEK_CHAPTER_ID, mek_title, MEK)
@@ -809,8 +839,13 @@ def write_build():
     arsplus_lang = language_for("arsplus", ARSPLUS_CHAPTER_ID, arsplus_title, ARSPLUS)
     mekplus_lang = language_for("mekplus", MEKPLUS_CHAPTER_ID, mekplus_title, MEKPLUS)
     community_lang = language_for("community", COMMUNITY_CHAPTER_ID, community_title, COMMUNITY)
+    services_lang = language_for("services", SERVICES_CHAPTER_ID, services_title, SERVICES)
+    atlas_lang = language_for("atlas", ATLAS_CHAPTER_ID, atlas_title, ATLAS)
+    threats_lang = language_for("threats", THREATS_CHAPTER_ID, threats_title, THREATS)
+    integration_lang = language_for("integration", INTEGRATION_CHAPTER_ID, integration_title, INTEGRATION)
+    finale_lang = language_for("finale", FINALE_CHAPTER_ID, finale_title, FINALE)
     group_lang = "{\n\tchapter_group.%s.title: %s\n}\n" % (GROUP_ID, q("PokeTech Arcana · Книга развития"))
-    merged = merge_languages(group_lang, sky_lang, create_lang, immersive_lang, mek_lang, ae2_lang, appmek_lang, ars_lang, occult_lang, evil_lang, fna_lang, irons_lang, farmer_lang, mystical_lang, pokemon_lang, trainers_lang, endgame_lang, apotheosis_lang, cataclysm_lang, draconic_lang, vampirism_lang, cobblemon_advanced_lang, achievements_lang, artifacts_lang, relics_lang, epicfight_lang, minecolonies_lang, oritech_lang, silentgear_lang, cobbleplus_lang, worldbosses_lang, createplus_lang, traveler_lang, builder_lang, swem_lang, origins_lang, starlight_lang, wildlife_lang, arsplus_lang, mekplus_lang, community_lang)
+    merged = merge_languages(group_lang, sky_lang, create_lang, immersive_lang, mek_lang, ae2_lang, appmek_lang, ars_lang, occult_lang, evil_lang, fna_lang, irons_lang, farmer_lang, mystical_lang, pokemon_lang, trainers_lang, endgame_lang, apotheosis_lang, cataclysm_lang, draconic_lang, vampirism_lang, cobblemon_advanced_lang, achievements_lang, artifacts_lang, relics_lang, epicfight_lang, minecolonies_lang, oritech_lang, silentgear_lang, cobbleplus_lang, worldbosses_lang, createplus_lang, traveler_lang, builder_lang, swem_lang, origins_lang, starlight_lang, wildlife_lang, arsplus_lang, mekplus_lang, community_lang, services_lang, atlas_lang, threats_lang, integration_lang, finale_lang)
     for locale in ("ru_ru", "en_us"):
         (QUESTS / "lang" / f"{locale}.snbt").write_text(merged, encoding="utf-8")
         split = QUESTS / "lang" / locale
@@ -826,7 +861,7 @@ def write_build():
             (VAMPIRISM_CHAPTER_ID, vampirism_title), (COBBLEMON_ADVANCED_CHAPTER_ID, cobblemon_advanced_title), (ACHIEVEMENTS_CHAPTER_ID, achievements_title),
             (ARTIFACTS_CHAPTER_ID, artifacts_title), (RELICS_CHAPTER_ID, relics_title), (EPICFIGHT_CHAPTER_ID, epicfight_title),
             (MINECOLONIES_CHAPTER_ID, minecolonies_title), (ORITECH_CHAPTER_ID, oritech_title), (SILENTGEAR_CHAPTER_ID, silentgear_title),
-            (COBBLEPLUS_CHAPTER_ID, cobbleplus_title), (WORLDBOSSES_CHAPTER_ID, worldbosses_title), (CREATEPLUS_CHAPTER_ID, createplus_title), (TRAVELER_CHAPTER_ID, traveler_title), (BUILDER_CHAPTER_ID, builder_title), (SWEM_CHAPTER_ID, swem_title), (ORIGINS_CHAPTER_ID, origins_title), (STARLIGHT_CHAPTER_ID, starlight_title), (WILDLIFE_CHAPTER_ID, wildlife_title), (ARSPLUS_CHAPTER_ID, arsplus_title), (MEKPLUS_CHAPTER_ID, mekplus_title), (COMMUNITY_CHAPTER_ID, community_title)
+            (COBBLEPLUS_CHAPTER_ID, cobbleplus_title), (WORLDBOSSES_CHAPTER_ID, worldbosses_title), (CREATEPLUS_CHAPTER_ID, createplus_title), (TRAVELER_CHAPTER_ID, traveler_title), (BUILDER_CHAPTER_ID, builder_title), (SWEM_CHAPTER_ID, swem_title), (ORIGINS_CHAPTER_ID, origins_title), (STARLIGHT_CHAPTER_ID, starlight_title), (WILDLIFE_CHAPTER_ID, wildlife_title), (ARSPLUS_CHAPTER_ID, arsplus_title), (MEKPLUS_CHAPTER_ID, mekplus_title), (COMMUNITY_CHAPTER_ID, community_title), (SERVICES_CHAPTER_ID, services_title), (ATLAS_CHAPTER_ID, atlas_title), (THREATS_CHAPTER_ID, threats_title), (INTEGRATION_CHAPTER_ID, integration_title), (FINALE_CHAPTER_ID, finale_title)
         )) + "\n}\n"
         (split / "chapter.snbt").write_text(chapter_lang, encoding="utf-8")
         sky_quest_lang = "{\n" + "\n".join(sky_lang.strip().splitlines()[2:-1]) + "\n}\n"
@@ -935,6 +970,11 @@ def write_build():
     make_atlas_background(tex / "backgrounds" / "arsplus_book.png", "ARS NOUVEAU+: ШКОЛЫ СТИХИЙ", "arsplus", ARSPLUS, [(123, 80, 164), (187, 85, 59), (58, 126, 164), (76, 139, 96)])
     make_atlas_background(tex / "backgrounds" / "mekplus_book.png", "MEKANISM+: ЭНЕРГЕТИЧЕСКИЙ КОМПЛЕКС", "mekplus", MEKPLUS, [(46, 130, 153), (178, 119, 49), (82, 137, 91), (150, 83, 83)])
     make_atlas_background(tex / "backgrounds" / "community_book.png", "СООБЩЕСТВО: ОБЩИЙ ПРОЕКТ", "community", COMMUNITY, [(176, 121, 56), (65, 123, 150), (79, 135, 92), (125, 84, 153)])
+    make_atlas_background(tex / "backgrounds" / "services_book.png", "COBBLEMON SERVICES: TRAINER NETWORK", "services", SERVICES, [(57, 127, 157), (77, 135, 94), (123, 83, 151), (190, 131, 61)])
+    make_atlas_background(tex / "backgrounds" / "atlas_book.png", "СТРУКТУРЫ И МИРЫ: БОЛЬШОЙ АТЛАС", "atlas", ATLAS, [(69, 123, 145), (166, 112, 59), (82, 132, 90), (120, 91, 145)])
+    make_atlas_background(tex / "backgrounds" / "threats_book.png", "ДИКИЕ УГРОЗЫ: СУЩЕСТВА И МУТАНТЫ", "threats", THREATS, [(158, 74, 68), (176, 121, 57), (91, 80, 142), (65, 112, 133)])
+    make_atlas_background(tex / "backgrounds" / "integration_book.png", "ЕДИНАЯ МАСТЕРСКАЯ: ИНТЕГРАЦИИ МОДОВ", "integration", INTEGRATION, [(57, 127, 157), (123, 83, 151), (176, 121, 57), (77, 135, 94)])
+    make_atlas_background(tex / "backgrounds" / "finale_book.png", "ФИНАЛЬНАЯ ХРОНИКА: НАСЛЕДИЕ POKETECH ARCANA", "finale", FINALE, [(178, 119, 51), (118, 83, 157), (58, 126, 151), (151, 75, 69)])
     palettes = [(36, 127, 160), (71, 127, 69), (123, 77, 149), (179, 100, 22), (71, 127, 69), (123, 77, 149), (179, 100, 22), (165, 79, 59), (57, 111, 168), (139, 90, 158), (163, 79, 87), (61, 122, 114), (118, 87, 168), (178, 111, 61), (77, 131, 166)]
     for namespace, title in (("skyblock", "Skyblock"), ("mekanism", "Mekanism"), ("create", "Create"), ("immersive", "Immersive Engineering"), ("ae2", "Applied Energistics 2"), ("appmek", "Applied Mekanistics"), ("ars", "Ars Nouveau"), ("occult", "Occultism"), ("evil", "EvilCraft"), ("fna", "Forbidden & Arcanus"), ("irons", "Iron's Spells"), ("farmer", "Farmer's Delight"), ("mystical", "Mystical Agriculture"), ("pokemon", "Pokémon"), ("trainers", "Тренеры и данжи"), ("endgame", "Эндгейм"), ("apotheosis", "Apotheosis"), ("cataclysm", "Cataclysm"), ("draconic", "Draconic Evolution"), ("vampirism", "Vampirism"), ("cobblemon_advanced", "Cobblemon: мастерство"), ("achievements", "Достижения сервера"), ("artifacts", "Artifacts"), ("relics", "Relics"), ("epicfight", "Epic Fight"), ("minecolonies", "MineColonies"), ("oritech", "Oritech"), ("silentgear", "Silent Gear"), ("cobbleplus", "Cobblemon+"), ("worldbosses", "Миры и боссы")):
         names = ({
@@ -972,7 +1012,7 @@ def write_build():
         for stage, (name, color) in enumerate(zip(names, palettes), 1):
             make_guide(tex / "guides" / f"{namespace}_{stage}.png", f"{title} · {name}", "Схема этапа и ключевой производственный поток", color, stage)
 
-    for namespace in ("createplus", "traveler", "builder", "swem", "origins", "starlight", "wildlife", "arsplus", "mekplus", "community"):
+    for namespace in ("createplus", "traveler", "builder", "swem", "origins", "starlight", "wildlife", "arsplus", "mekplus", "community", "services", "atlas", "threats", "integration", "finale"):
         title = next_chapters.CHAPTERS[namespace]["title"]
         for stage, name in enumerate(next_chapters.stage_names(namespace), 1):
             color = palettes[(stage + len(namespace)) % len(palettes)]
@@ -994,8 +1034,8 @@ def write_build():
             for path in base.rglob("*"):
                 if path.is_file():
                     archive.write(path, path.relative_to(BUILD))
-    total = sum(map(len, (SKY, CREATE, IMMERSIVE, MEK, AE2, APPMEK, ARS, OCCULT, EVIL, FNA, IRONS, FARMER, MYSTICAL, POKEMON, TRAINERS, ENDGAME, APOTHEOSIS, CATACLYSM, DRACONIC, VAMPIRISM, COBBLEMON_ADVANCED, ACHIEVEMENTS, ARTIFACTS, RELICS, EPICFIGHT, MINECOLONIES, ORITECH, SILENTGEAR, COBBLEPLUS, WORLDBOSSES, CREATEPLUS, TRAVELER, BUILDER, SWEM, ORIGINS, STARLIGHT, WILDLIFE, ARSPLUS, MEKPLUS, COMMUNITY)))
-    print(f"Built 40 chapters and {total} quests; latest: {len(STARLIGHT)} Starlight + {len(WILDLIFE)} Wildlife + {len(ARSPLUS)} Ars+ + {len(MEKPLUS)} Mekanism+ + {len(COMMUNITY)} Community")
+    total = sum(map(len, (SKY, CREATE, IMMERSIVE, MEK, AE2, APPMEK, ARS, OCCULT, EVIL, FNA, IRONS, FARMER, MYSTICAL, POKEMON, TRAINERS, ENDGAME, APOTHEOSIS, CATACLYSM, DRACONIC, VAMPIRISM, COBBLEMON_ADVANCED, ACHIEVEMENTS, ARTIFACTS, RELICS, EPICFIGHT, MINECOLONIES, ORITECH, SILENTGEAR, COBBLEPLUS, WORLDBOSSES, CREATEPLUS, TRAVELER, BUILDER, SWEM, ORIGINS, STARLIGHT, WILDLIFE, ARSPLUS, MEKPLUS, COMMUNITY, SERVICES, ATLAS, THREATS, INTEGRATION, FINALE)))
+    print(f"Built 45 chapters and {total} quests; finale: {len(SERVICES)} Services + {len(ATLAS)} Atlas + {len(THREATS)} Threats + {len(INTEGRATION)} Integration + {len(FINALE)} Finale")
     print(f"Server package: {package} ({package.stat().st_size} bytes)")
 
 

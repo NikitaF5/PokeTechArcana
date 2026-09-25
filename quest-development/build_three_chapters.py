@@ -6,6 +6,7 @@ from pathlib import Path
 import build_expansion_chapters as expansion_chapters
 import build_next_chapters as next_chapters_extra
 import build_followup_chapters as followup_chapters
+import build_final_chapters as final_chapters
 
 
 ROOT = Path(__file__).resolve().parent
@@ -339,6 +340,7 @@ CHAPTERS = {
 CHAPTERS.update(expansion_chapters.CHAPTERS)
 CHAPTERS.update(next_chapters_extra.CHAPTERS)
 CHAPTERS.update(followup_chapters.CHAPTERS)
+CHAPTERS.update(final_chapters.CHAPTERS)
 
 
 # Each objective uses a real registered item that matches the lesson instead of
@@ -427,6 +429,8 @@ for _namespace, _pool in expansion_chapters.ITEM_POOLS.items():
 for _namespace, _pool in next_chapters_extra.ITEM_POOLS.items():
     ITEMS[_namespace] = _generated_rows(_pool, _target_stage_counts(_namespace))
 for _namespace, _pool in followup_chapters.ITEM_POOLS.items():
+    ITEMS[_namespace] = _generated_rows(_pool, _target_stage_counts(_namespace))
+for _namespace, _pool in final_chapters.ITEM_POOLS.items():
     ITEMS[_namespace] = _generated_rows(_pool, _target_stage_counts(_namespace))
 
 
