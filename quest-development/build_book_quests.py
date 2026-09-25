@@ -51,7 +51,12 @@ ACHIEVEMENTS_CHAPTER_ID = "5A2ECAFE30006"
 ARTIFACTS_CHAPTER_ID = "5A2ECAFE30007"
 RELICS_CHAPTER_ID = "5A2ECAFE30008"
 EPICFIGHT_CHAPTER_ID = "5A2ECAFE30009"
-PACKAGE_VERSION = "1.11.0"
+MINECOLONIES_CHAPTER_ID = "5A2ECAFE40001"
+ORITECH_CHAPTER_ID = "5A2ECAFE40002"
+SILENTGEAR_CHAPTER_ID = "5A2ECAFE40003"
+COBBLEPLUS_CHAPTER_ID = "5A2ECAFE40004"
+WORLDBOSSES_CHAPTER_ID = "5A2ECAFE40005"
+PACKAGE_VERSION = "1.12.0"
 
 
 @dataclass(frozen=True)
@@ -213,6 +218,11 @@ ACHIEVEMENTS = next_chapters.build_chapter("achievements", Quest)
 ARTIFACTS = next_chapters.build_chapter("artifacts", Quest)
 RELICS = next_chapters.build_chapter("relics", Quest)
 EPICFIGHT = next_chapters.build_chapter("epicfight", Quest)
+MINECOLONIES = next_chapters.build_chapter("minecolonies", Quest)
+ORITECH = next_chapters.build_chapter("oritech", Quest)
+SILENTGEAR = next_chapters.build_chapter("silentgear", Quest)
+COBBLEPLUS = next_chapters.build_chapter("cobbleplus", Quest)
+WORLDBOSSES = next_chapters.build_chapter("worldbosses", Quest)
 MILESTONES = {
     "skyblock": {"start": 1, "sieve": 2, "cobble": 3, "ores": 4, "generator": 5, "autohammer": 6, "core": 7},
     "mekanism": {"osmium": 1, "enrichment": 2, "cables": 3, "basicfactory": 4, "purification": 5, "wind": 6, "fusion": 7},
@@ -239,6 +249,11 @@ MILESTONES = {
     "artifacts": {f"s{i:02d}_01": i for i in range(1, 9)},
     "relics": {f"s{i:02d}_01": i for i in range(1, 9)},
     "epicfight": {f"s{i:02d}_01": i for i in range(1, 10)},
+    "minecolonies": {f"s{i:02d}_01": i for i in range(1, 12)},
+    "oritech": {f"s{i:02d}_01": i for i in range(1, 10)},
+    "silentgear": {f"s{i:02d}_01": i for i in range(1, 10)},
+    "cobbleplus": {f"s{i:02d}_01": i for i in range(1, 13)},
+    "worldbosses": {f"s{i:02d}_01": i for i in range(1, 12)},
 }
 
 
@@ -428,8 +443,11 @@ def make_atlas_background(path: Path, title: str, namespace: str, quests: list[Q
     mapped = [point(x, y) for x, y in centers]
     for index, ((x, y), stage) in enumerate(zip(mapped, next_chapters.CHAPTERS[namespace]["stages"])):
         color = palette[index % len(palette)]
-        radius_x = max(62, image_w / (len(centers) * 2.7))
-        radius_y = max(70, image_h / 5.2)
+        # Keep decorative zones close to their quest cluster.  Oversized
+        # ellipses used to cover the title and neighboring branches in wide
+        # chapters, which made the parchment look broken in the game UI.
+        radius_x = max(50, image_w / (len(centers) * 3.4))
+        radius_y = max(58, image_h / 8.0)
         draw.ellipse((x - radius_x, y - radius_y, x + radius_x, y + radius_y),
                      fill=(*color, 12), outline=(*color, 75), width=3)
         label = stage[1]
@@ -594,6 +612,11 @@ def write_build():
     validate(ARTIFACTS, "artifacts", 72)
     validate(RELICS, "relics", 80)
     validate(EPICFIGHT, "epicfight", 90)
+    validate(MINECOLONIES, "minecolonies", 110)
+    validate(ORITECH, "oritech", 90)
+    validate(SILENTGEAR, "silentgear", 90)
+    validate(COBBLEPLUS, "cobbleplus", 120)
+    validate(WORLDBOSSES, "worldbosses", 110)
     if BUILD.exists():
         shutil.rmtree(BUILD)
     (QUESTS / "chapters").mkdir(parents=True)
@@ -650,6 +673,11 @@ def write_build():
     artifacts_title = next_chapters.CHAPTERS["artifacts"]["title"]
     relics_title = next_chapters.CHAPTERS["relics"]["title"]
     epicfight_title = next_chapters.CHAPTERS["epicfight"]["title"]
+    minecolonies_title = next_chapters.CHAPTERS["minecolonies"]["title"]
+    oritech_title = next_chapters.CHAPTERS["oritech"]["title"]
+    silentgear_title = next_chapters.CHAPTERS["silentgear"]["title"]
+    cobbleplus_title = next_chapters.CHAPTERS["cobbleplus"]["title"]
+    worldbosses_title = next_chapters.CHAPTERS["worldbosses"]["title"]
     (QUESTS / "chapters" / "skyblock.snbt").write_text(make_chapter("skyblock", SKY_CHAPTER_ID, sky_title, 0, "exdeorum:oak_sieve", SKY, "poketech:textures/quests/backgrounds/skyblock_book.png"), encoding="utf-8")
     (QUESTS / "chapters" / "create.snbt").write_text(make_chapter("create", CREATE_CHAPTER_ID, create_title, 1, "create:mechanical_press", CREATE, "poketech:textures/quests/backgrounds/create_book.png"), encoding="utf-8")
     (QUESTS / "chapters" / "immersive.snbt").write_text(make_chapter("immersive", IMMERSIVE_CHAPTER_ID, immersive_title, 2, "immersiveengineering:hammer", IMMERSIVE, "poketech:textures/quests/backgrounds/immersive_book.png"), encoding="utf-8")
@@ -675,6 +703,11 @@ def write_build():
     (QUESTS / "chapters" / "artifacts.snbt").write_text(make_chapter("artifacts", ARTIFACTS_CHAPTER_ID, artifacts_title, 22, "artifacts:crystal_heart", ARTIFACTS, "poketech:textures/quests/backgrounds/artifacts_book.png"), encoding="utf-8")
     (QUESTS / "chapters" / "relics.snbt").write_text(make_chapter("relics", RELICS_CHAPTER_ID, relics_title, 23, "relics:chorus_staff", RELICS, "poketech:textures/quests/backgrounds/relics_book.png"), encoding="utf-8")
     (QUESTS / "chapters" / "epicfight.snbt").write_text(make_chapter("epicfight", EPICFIGHT_CHAPTER_ID, epicfight_title, 24, "epicfight:skillbook", EPICFIGHT, "poketech:textures/quests/backgrounds/epicfight_book.png"), encoding="utf-8")
+    (QUESTS / "chapters" / "minecolonies.snbt").write_text(make_chapter("minecolonies", MINECOLONIES_CHAPTER_ID, minecolonies_title, 25, "minecolonies:blockhuttownhall", MINECOLONIES, "poketech:textures/quests/backgrounds/minecolonies_book.png"), encoding="utf-8")
+    (QUESTS / "chapters" / "oritech.snbt").write_text(make_chapter("oritech", ORITECH_CHAPTER_ID, oritech_title, 26, "oritech:atomic_forge_block", ORITECH, "poketech:textures/quests/backgrounds/oritech_book.png"), encoding="utf-8")
+    (QUESTS / "chapters" / "silentgear.snbt").write_text(make_chapter("silentgear", SILENTGEAR_CHAPTER_ID, silentgear_title, 27, "silentgear:blueprint_book", SILENTGEAR, "poketech:textures/quests/backgrounds/silentgear_book.png"), encoding="utf-8")
+    (QUESTS / "chapters" / "cobbleplus.snbt").write_text(make_chapter("cobbleplus", COBBLEPLUS_CHAPTER_ID, cobbleplus_title, 28, "cobblemonraiddens:raid_pouch", COBBLEPLUS, "poketech:textures/quests/backgrounds/cobbleplus_book.png"), encoding="utf-8")
+    (QUESTS / "chapters" / "worldbosses.snbt").write_text(make_chapter("worldbosses", WORLDBOSSES_CHAPTER_ID, worldbosses_title, 29, "bosses_of_mass_destruction:soul_star", WORLDBOSSES, "poketech:textures/quests/backgrounds/worldbosses_book.png"), encoding="utf-8")
 
     sky_lang = language_for("skyblock", SKY_CHAPTER_ID, sky_title, SKY)
     mek_lang = language_for("mekanism", MEK_CHAPTER_ID, mek_title, MEK)
@@ -701,8 +734,13 @@ def write_build():
     artifacts_lang = language_for("artifacts", ARTIFACTS_CHAPTER_ID, artifacts_title, ARTIFACTS)
     relics_lang = language_for("relics", RELICS_CHAPTER_ID, relics_title, RELICS)
     epicfight_lang = language_for("epicfight", EPICFIGHT_CHAPTER_ID, epicfight_title, EPICFIGHT)
+    minecolonies_lang = language_for("minecolonies", MINECOLONIES_CHAPTER_ID, minecolonies_title, MINECOLONIES)
+    oritech_lang = language_for("oritech", ORITECH_CHAPTER_ID, oritech_title, ORITECH)
+    silentgear_lang = language_for("silentgear", SILENTGEAR_CHAPTER_ID, silentgear_title, SILENTGEAR)
+    cobbleplus_lang = language_for("cobbleplus", COBBLEPLUS_CHAPTER_ID, cobbleplus_title, COBBLEPLUS)
+    worldbosses_lang = language_for("worldbosses", WORLDBOSSES_CHAPTER_ID, worldbosses_title, WORLDBOSSES)
     group_lang = "{\n\tchapter_group.%s.title: %s\n}\n" % (GROUP_ID, q("PokeTech Arcana · Книга развития"))
-    merged = merge_languages(group_lang, sky_lang, create_lang, immersive_lang, mek_lang, ae2_lang, appmek_lang, ars_lang, occult_lang, evil_lang, fna_lang, irons_lang, farmer_lang, mystical_lang, pokemon_lang, trainers_lang, endgame_lang, apotheosis_lang, cataclysm_lang, draconic_lang, vampirism_lang, cobblemon_advanced_lang, achievements_lang, artifacts_lang, relics_lang, epicfight_lang)
+    merged = merge_languages(group_lang, sky_lang, create_lang, immersive_lang, mek_lang, ae2_lang, appmek_lang, ars_lang, occult_lang, evil_lang, fna_lang, irons_lang, farmer_lang, mystical_lang, pokemon_lang, trainers_lang, endgame_lang, apotheosis_lang, cataclysm_lang, draconic_lang, vampirism_lang, cobblemon_advanced_lang, achievements_lang, artifacts_lang, relics_lang, epicfight_lang, minecolonies_lang, oritech_lang, silentgear_lang, cobbleplus_lang, worldbosses_lang)
     for locale in ("ru_ru", "en_us"):
         (QUESTS / "lang" / f"{locale}.snbt").write_text(merged, encoding="utf-8")
         split = QUESTS / "lang" / locale
@@ -716,7 +754,9 @@ def write_build():
             (POKEMON_CHAPTER_ID, pokemon_title), (TRAINERS_CHAPTER_ID, trainers_title), (ENDGAME_CHAPTER_ID, endgame_title),
             (APOTHEOSIS_CHAPTER_ID, apotheosis_title), (CATACLYSM_CHAPTER_ID, cataclysm_title), (DRACONIC_CHAPTER_ID, draconic_title),
             (VAMPIRISM_CHAPTER_ID, vampirism_title), (COBBLEMON_ADVANCED_CHAPTER_ID, cobblemon_advanced_title), (ACHIEVEMENTS_CHAPTER_ID, achievements_title),
-            (ARTIFACTS_CHAPTER_ID, artifacts_title), (RELICS_CHAPTER_ID, relics_title), (EPICFIGHT_CHAPTER_ID, epicfight_title)
+            (ARTIFACTS_CHAPTER_ID, artifacts_title), (RELICS_CHAPTER_ID, relics_title), (EPICFIGHT_CHAPTER_ID, epicfight_title),
+            (MINECOLONIES_CHAPTER_ID, minecolonies_title), (ORITECH_CHAPTER_ID, oritech_title), (SILENTGEAR_CHAPTER_ID, silentgear_title),
+            (COBBLEPLUS_CHAPTER_ID, cobbleplus_title), (WORLDBOSSES_CHAPTER_ID, worldbosses_title)
         )) + "\n}\n"
         (split / "chapter.snbt").write_text(chapter_lang, encoding="utf-8")
         sky_quest_lang = "{\n" + "\n".join(sky_lang.strip().splitlines()[2:-1]) + "\n}\n"
@@ -744,6 +784,11 @@ def write_build():
         artifacts_quest_lang = "{\n" + "\n".join(artifacts_lang.strip().splitlines()[2:-1]) + "\n}\n"
         relics_quest_lang = "{\n" + "\n".join(relics_lang.strip().splitlines()[2:-1]) + "\n}\n"
         epicfight_quest_lang = "{\n" + "\n".join(epicfight_lang.strip().splitlines()[2:-1]) + "\n}\n"
+        minecolonies_quest_lang = "{\n" + "\n".join(minecolonies_lang.strip().splitlines()[2:-1]) + "\n}\n"
+        oritech_quest_lang = "{\n" + "\n".join(oritech_lang.strip().splitlines()[2:-1]) + "\n}\n"
+        silentgear_quest_lang = "{\n" + "\n".join(silentgear_lang.strip().splitlines()[2:-1]) + "\n}\n"
+        cobbleplus_quest_lang = "{\n" + "\n".join(cobbleplus_lang.strip().splitlines()[2:-1]) + "\n}\n"
+        worldbosses_quest_lang = "{\n" + "\n".join(worldbosses_lang.strip().splitlines()[2:-1]) + "\n}\n"
         (split / "chapters" / "skyblock.snbt").write_text(sky_quest_lang, encoding="utf-8")
         (split / "chapters" / "mekanism.snbt").write_text(mek_quest_lang, encoding="utf-8")
         (split / "chapters" / "create.snbt").write_text(create_quest_lang, encoding="utf-8")
@@ -769,6 +814,11 @@ def write_build():
         (split / "chapters" / "artifacts.snbt").write_text(artifacts_quest_lang, encoding="utf-8")
         (split / "chapters" / "relics.snbt").write_text(relics_quest_lang, encoding="utf-8")
         (split / "chapters" / "epicfight.snbt").write_text(epicfight_quest_lang, encoding="utf-8")
+        (split / "chapters" / "minecolonies.snbt").write_text(minecolonies_quest_lang, encoding="utf-8")
+        (split / "chapters" / "oritech.snbt").write_text(oritech_quest_lang, encoding="utf-8")
+        (split / "chapters" / "silentgear.snbt").write_text(silentgear_quest_lang, encoding="utf-8")
+        (split / "chapters" / "cobbleplus.snbt").write_text(cobbleplus_quest_lang, encoding="utf-8")
+        (split / "chapters" / "worldbosses.snbt").write_text(worldbosses_quest_lang, encoding="utf-8")
 
     ftb_assets = ASSETS / "ftbquests"
     ftb_assets.mkdir(parents=True)
@@ -800,8 +850,13 @@ def write_build():
     make_atlas_background(tex / "backgrounds" / "artifacts_book.png", "ARTIFACTS: КАРТА ПОТЕРЯННЫХ СОКРОВИЩ", "artifacts", ARTIFACTS, [(166, 109, 53), (57, 127, 146), (116, 84, 55), (78, 113, 91)])
     make_atlas_background(tex / "backgrounds" / "relics_book.png", "RELICS: МУЗЕЙ ЖИВЫХ РЕЛИКВИЙ", "relics", RELICS, [(115, 80, 165), (184, 130, 61), (81, 112, 148), (141, 82, 118)])
     make_atlas_background(tex / "backgrounds" / "epicfight_book.png", "EPIC FIGHT: ШКОЛЫ БОЕВОГО МАСТЕРСТВА", "epicfight", EPICFIGHT, [(155, 78, 73), (57, 127, 146), (176, 119, 57), (87, 91, 127)])
+    make_atlas_background(tex / "backgrounds" / "minecolonies_book.png", "MINECOLONIES: ГОРОД НА ОСТРОВЕ", "minecolonies", MINECOLONIES, [(147, 105, 63), (72, 120, 91), (176, 132, 69), (91, 101, 137)])
+    make_atlas_background(tex / "backgrounds" / "oritech_book.png", "ORITECH: ОРБИТАЛЬНАЯ ПРОМЫШЛЕННОСТЬ", "oritech", ORITECH, [(58, 125, 145), (182, 118, 54), (96, 88, 144), (63, 138, 119)])
+    make_atlas_background(tex / "backgrounds" / "silentgear_book.png", "SILENT GEAR: КУЗНЕЧНОЕ ДРЕВО", "silentgear", SILENTGEAR, [(142, 86, 58), (85, 119, 143), (179, 125, 60), (82, 133, 100)])
+    make_atlas_background(tex / "backgrounds" / "cobbleplus_book.png", "COBBLEMON+: КАРТА ЖИВОГО РЕГИОНА", "cobbleplus", COBBLEPLUS, [(57, 127, 146), (194, 131, 61), (77, 135, 94), (169, 83, 92)])
+    make_atlas_background(tex / "backgrounds" / "worldbosses_book.png", "МИРЫ И БОССЫ: АТЛАС ЭКСПЕДИЦИЙ", "worldbosses", WORLDBOSSES, [(153, 74, 70), (91, 80, 142), (188, 126, 61), (69, 113, 134)])
     palettes = [(36, 127, 160), (71, 127, 69), (123, 77, 149), (179, 100, 22), (71, 127, 69), (123, 77, 149), (179, 100, 22), (165, 79, 59), (57, 111, 168), (139, 90, 158), (163, 79, 87), (61, 122, 114), (118, 87, 168), (178, 111, 61), (77, 131, 166)]
-    for namespace, title in (("skyblock", "Skyblock"), ("mekanism", "Mekanism"), ("create", "Create"), ("immersive", "Immersive Engineering"), ("ae2", "Applied Energistics 2"), ("appmek", "Applied Mekanistics"), ("ars", "Ars Nouveau"), ("occult", "Occultism"), ("evil", "EvilCraft"), ("fna", "Forbidden & Arcanus"), ("irons", "Iron's Spells"), ("farmer", "Farmer's Delight"), ("mystical", "Mystical Agriculture"), ("pokemon", "Pokémon"), ("trainers", "Тренеры и данжи"), ("endgame", "Эндгейм"), ("apotheosis", "Apotheosis"), ("cataclysm", "Cataclysm"), ("draconic", "Draconic Evolution"), ("vampirism", "Vampirism"), ("cobblemon_advanced", "Cobblemon: мастерство"), ("achievements", "Достижения сервера"), ("artifacts", "Artifacts"), ("relics", "Relics"), ("epicfight", "Epic Fight")):
+    for namespace, title in (("skyblock", "Skyblock"), ("mekanism", "Mekanism"), ("create", "Create"), ("immersive", "Immersive Engineering"), ("ae2", "Applied Energistics 2"), ("appmek", "Applied Mekanistics"), ("ars", "Ars Nouveau"), ("occult", "Occultism"), ("evil", "EvilCraft"), ("fna", "Forbidden & Arcanus"), ("irons", "Iron's Spells"), ("farmer", "Farmer's Delight"), ("mystical", "Mystical Agriculture"), ("pokemon", "Pokémon"), ("trainers", "Тренеры и данжи"), ("endgame", "Эндгейм"), ("apotheosis", "Apotheosis"), ("cataclysm", "Cataclysm"), ("draconic", "Draconic Evolution"), ("vampirism", "Vampirism"), ("cobblemon_advanced", "Cobblemon: мастерство"), ("achievements", "Достижения сервера"), ("artifacts", "Artifacts"), ("relics", "Relics"), ("epicfight", "Epic Fight"), ("minecolonies", "MineColonies"), ("oritech", "Oritech"), ("silentgear", "Silent Gear"), ("cobbleplus", "Cobblemon+"), ("worldbosses", "Миры и боссы")):
         names = ({
             "skyblock": ["Остров", "Просеивание", "Камень", "Ресурсы", "Измерения", "Автоматизация", "Переход"],
             "mekanism": ["Основа", "Машины", "Сети", "Фабрики", "Химия", "Атом", "Финал"],
@@ -828,6 +883,11 @@ def write_build():
             "artifacts": next_chapters.stage_names("artifacts"),
             "relics": next_chapters.stage_names("relics"),
             "epicfight": next_chapters.stage_names("epicfight"),
+            "minecolonies": next_chapters.stage_names("minecolonies"),
+            "oritech": next_chapters.stage_names("oritech"),
+            "silentgear": next_chapters.stage_names("silentgear"),
+            "cobbleplus": next_chapters.stage_names("cobbleplus"),
+            "worldbosses": next_chapters.stage_names("worldbosses"),
         }[namespace])
         for stage, (name, color) in enumerate(zip(names, palettes), 1):
             make_guide(tex / "guides" / f"{namespace}_{stage}.png", f"{title} · {name}", "Схема этапа и ключевой производственный поток", color, stage)
@@ -848,7 +908,8 @@ def write_build():
             for path in base.rglob("*"):
                 if path.is_file():
                     archive.write(path, path.relative_to(BUILD))
-    print(f"Built {len(SKY)} Skyblock + {len(CREATE)} Create + {len(IMMERSIVE)} Immersive Engineering + {len(MEK)} Mekanism + {len(AE2)} AE2 + {len(APPMEK)} Applied Mekanistics + {len(ARS)} Ars Nouveau + {len(OCCULT)} Occultism + {len(EVIL)} EvilCraft + {len(FNA)} Forbidden & Arcanus + {len(IRONS)} Iron's Spells + {len(FARMER)} Farmer's Delight + {len(MYSTICAL)} Mystical Agriculture + {len(POKEMON)} Pokemon + {len(TRAINERS)} Trainers + {len(ENDGAME)} Endgame + {len(APOTHEOSIS)} Apotheosis + {len(CATACLYSM)} Cataclysm + {len(DRACONIC)} Draconic Evolution + {len(VAMPIRISM)} Vampirism + {len(COBBLEMON_ADVANCED)} Cobblemon advanced + {len(ACHIEVEMENTS)} Achievements + {len(ARTIFACTS)} Artifacts + {len(RELICS)} Relics + {len(EPICFIGHT)} Epic Fight quests")
+    total = sum(map(len, (SKY, CREATE, IMMERSIVE, MEK, AE2, APPMEK, ARS, OCCULT, EVIL, FNA, IRONS, FARMER, MYSTICAL, POKEMON, TRAINERS, ENDGAME, APOTHEOSIS, CATACLYSM, DRACONIC, VAMPIRISM, COBBLEMON_ADVANCED, ACHIEVEMENTS, ARTIFACTS, RELICS, EPICFIGHT, MINECOLONIES, ORITECH, SILENTGEAR, COBBLEPLUS, WORLDBOSSES)))
+    print(f"Built 30 chapters and {total} quests; expansion: {len(MINECOLONIES)} MineColonies + {len(ORITECH)} Oritech + {len(SILENTGEAR)} Silent Gear + {len(COBBLEPLUS)} Cobblemon+ + {len(WORLDBOSSES)} Worlds/Bosses")
     print(f"Server package: {package} ({package.stat().st_size} bytes)")
 
 

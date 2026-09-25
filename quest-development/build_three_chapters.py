@@ -3,6 +3,8 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+import build_expansion_chapters as expansion_chapters
+
 
 ROOT = Path(__file__).resolve().parent
 WORKSPACE = ROOT.parent
@@ -330,6 +332,10 @@ CHAPTERS = {
     },
 }
 
+# Expansion chapters are kept in their own data module so this already-large
+# catalog stays reviewable.  They use the same renderer and ID scheme.
+CHAPTERS.update(expansion_chapters.CHAPTERS)
+
 
 # Each objective uses a real registered item that matches the lesson instead of
 # a generic placeholder. The last item in every row is the stage capstone.
@@ -360,7 +366,7 @@ ITEMS = {
         ["ars_nouveau:glyph_touch", "ars_nouveau:glyph_break", "ars_nouveau:glyph_amplify", "ars_nouveau:glyph_extend_time", "ars_nouveau:glyph_amplify", "ars_nouveau:glyph_aoe", "ars_nouveau:glyph_pierce", "ars_nouveau:glyph_delay", "ars_nouveau:spell_parchment"],
         ["ars_nouveau:magebloom", "ars_nouveau:magebloom_fiber", "ars_nouveau:apprentice_spell_book", "ars_nouveau:archmage_spell_book", "ars_nouveau:glyph_amplify", "ars_nouveau:glyph_blink", "ars_nouveau:amulet_of_mana_regen", "ars_nouveau:archmage_spell_book", "ars_nouveau:archmage_spell_book"],
         ["ars_nouveau:spell_turret", "ars_nouveau:spell_prism", "ars_nouveau:relay_splitter", "ars_nouveau:relay_collector", "ars_nouveau:relay_deposit", "ars_nouveau:source_gem_block", "ars_nouveau:glyph_break", "ars_nouveau:glyph_harvest", "ars_nouveau:timer_spell_turret"],
-        ["ars_nouveau:wixie_cauldron", "ars_nouveau:whirlisprig_charm", "ars_nouveau:starbuncle_charm", "ars_nouveau:drygmy_charm", "ars_nouveau:amethyst_golem_charm", "ars_nouveau:bookwyrm_charm", "ars_nouveau:familiar_starbuncle", "ars_nouveau:storage_lectern", "ars_nouveau:summoning_crystal"],
+        ["ars_nouveau:wixie_cauldron", "ars_nouveau:whirlisprig_charm", "ars_nouveau:starbuncle_charm", "ars_nouveau:drygmy_charm", "ars_nouveau:amethyst_golem_charm", "ars_nouveau:bookwyrm_charm", "ars_nouveau:familiar_starbuncle", "ars_nouveau:storage_lectern", "ars_nouveau:ritual_brazier"],
         ["ars_nouveau:ritual_brazier", "ars_nouveau:ritual_sunrise", "ars_nouveau:ritual_overgrowth", "ars_nouveau:ritual_flight", "ars_nouveau:ritual_warping", "ars_nouveau:ritual_containment", "ars_nouveau:ritual_binding", "ars_nouveau:ritual_brazier"],
         ["ars_nouveau:enchanters_sword", "ars_nouveau:enchanters_shield", "ars_nouveau:battlemage_robes", "ars_nouveau:blank_thread", "ars_nouveau:dominion_wand", "ars_nouveau:portal", "ars_nouveau:stable_warp_scroll", "ars_nouveau:archmage_spell_book", "ars_nouveau:archmage_spell_book"],
     ],
@@ -404,11 +410,16 @@ def _generated_rows(pool: list[str], stage_counts: list[int]) -> list[list[str]]
 
 def _target_stage_counts(namespace: str) -> list[int]:
     config = CHAPTERS[namespace]
-    counts = [len(stage[2]) + 1 for stage in config["stages"]]
+    append_control = config.get("append_control", True)
+    counts = [len(stage[2]) + (1 if append_control else 0) for stage in config["stages"]]
     extra = config.get("target_count", sum(counts)) - sum(counts)
     for index in range(extra):
         counts[index % len(counts)] += 1
     return counts
+
+
+for _namespace, _pool in expansion_chapters.ITEM_POOLS.items():
+    ITEMS[_namespace] = _generated_rows(_pool, _target_stage_counts(_namespace))
 
 
 ITEMS["irons"] = _generated_rows([
@@ -616,13 +627,17 @@ def build_chapter(namespace: str, quest_cls, tag_main: str = "pta_main", tag_bra
     config = CHAPTERS[namespace]
     result = []
     prior_root = None
-    extras = config.get("target_count", sum(len(stage[2]) + 1 for stage in config["stages"])) - sum(len(stage[2]) + 1 for stage in config["stages"])
+    append_control = config.get("append_control", True)
+    base_counts = [len(stage[2]) + (1 if append_control else 0) for stage in config["stages"]]
+    extras = config.get("target_count", sum(base_counts)) - sum(base_counts)
     stage_extras = [0] * len(config["stages"])
     for index in range(extras):
         stage_extras[index % len(stage_extras)] += 1
     for stage_index, (phase, stage_name, configured_titles) in enumerate(config["stages"]):
         practice = [f"Практика этапа {number + 1}: {stage_name}" for number in range(stage_extras[stage_index])]
-        titles = [*configured_titles, *practice, f"Контрольная сборка: {stage_name}"]
+        titles = [*configured_titles, *practice]
+        if append_control:
+            titles.append(f"Контрольная сборка: {stage_name}")
         cx, cy = config["centers"][stage_index]
         points = _points(config["patterns"][stage_index], len(titles), cx, cy)
         for quest_index, title in enumerate(titles):
@@ -635,7 +650,12 @@ def build_chapter(namespace: str, quest_cls, tag_main: str = "pta_main", tag_bra
                     deps = (prior_root,) if prior_root else ()
                 else:
                     deps = tuple(f"s{parent + 1:02d}_01" for parent in stage_parents[stage_index])
-            result.append(quest_cls(key, title, phase, f"Практический урок этапа «{stage_name}». Выполни действие и проверь результат перед переходом дальше.", points[quest_index][0], points[quest_index][1], "diamond" if quest_index == 0 else ("hexagon" if quest_index % 3 == 0 else "circle"), 1.45 if quest_index == 0 else 1.0, ((item, 1),), deps, (item, 1), 2 + stage_index, tag_main if quest_index == 0 else tag_branch, item))
+            desc = (
+                f"Урок «{title}» в этапе «{stage_name}». Получи указанный предмет и изучи его назначение через JEI или книгу мода. "
+                "Размести или испытай его в безопасной зоне, проверь входы, выходы и ограничения. "
+                "Задание засчитывается по предмету в инвентаре; после проверки сохрани рабочую сборку для следующих шагов."
+            )
+            result.append(quest_cls(key, title, phase, desc, points[quest_index][0], points[quest_index][1], "diamond" if quest_index == 0 else ("hexagon" if quest_index % 3 == 0 else "circle"), 1.45 if quest_index == 0 else 1.0, ((item, 1),), deps, (item, 1), 2 + stage_index, tag_main if quest_index == 0 else tag_branch, item))
         prior_root = f"s{stage_index + 1:02d}_01"
     return result
 
