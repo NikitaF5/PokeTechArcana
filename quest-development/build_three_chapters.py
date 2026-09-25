@@ -5,6 +5,7 @@ from pathlib import Path
 
 import build_expansion_chapters as expansion_chapters
 import build_next_chapters as next_chapters_extra
+import build_followup_chapters as followup_chapters
 
 
 ROOT = Path(__file__).resolve().parent
@@ -337,6 +338,7 @@ CHAPTERS = {
 # catalog stays reviewable.  They use the same renderer and ID scheme.
 CHAPTERS.update(expansion_chapters.CHAPTERS)
 CHAPTERS.update(next_chapters_extra.CHAPTERS)
+CHAPTERS.update(followup_chapters.CHAPTERS)
 
 
 # Each objective uses a real registered item that matches the lesson instead of
@@ -423,6 +425,8 @@ def _target_stage_counts(namespace: str) -> list[int]:
 for _namespace, _pool in expansion_chapters.ITEM_POOLS.items():
     ITEMS[_namespace] = _generated_rows(_pool, _target_stage_counts(_namespace))
 for _namespace, _pool in next_chapters_extra.ITEM_POOLS.items():
+    ITEMS[_namespace] = _generated_rows(_pool, _target_stage_counts(_namespace))
+for _namespace, _pool in followup_chapters.ITEM_POOLS.items():
     ITEMS[_namespace] = _generated_rows(_pool, _target_stage_counts(_namespace))
 
 
