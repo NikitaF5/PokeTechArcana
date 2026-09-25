@@ -86,7 +86,7 @@ ATLAS_CHAPTER_ID = "0005A2ECAFE70002"
 THREATS_CHAPTER_ID = "0005A2ECAFE70003"
 INTEGRATION_CHAPTER_ID = "0005A2ECAFE70004"
 FINALE_CHAPTER_ID = "0005A2ECAFE70005"
-PACKAGE_VERSION = "1.15.6"
+PACKAGE_VERSION = "1.15.7"
 
 
 @dataclass(frozen=True)
@@ -612,7 +612,7 @@ def make_chapter(namespace: str, chapter_id: str, title: str, order: int, icon: 
     width, height, cx, cy = chapter_geometry(quests)
     return "\n".join([
         "{",
-        "\tdefault_hide_dependency_lines: false",
+        f"\tdefault_hide_dependency_lines: {'true' if namespace in next_chapters.CHAPTERS else 'false'}",
         "\tdefault_min_width: 270",
         "\tdefault_quest_shape: \"circle\"",
         f"\tfilename: {q(namespace)}",
@@ -738,6 +738,19 @@ def make_atlas_background(path: Path, title: str, namespace: str, quests: list[Q
         return ((x - min_x) / (max_x - min_x) * image_w,
                 (y - min_y) / (max_y - min_y) * image_h)
 
+    def bezier(a: Quest, b: Quest, color: tuple[int, int, int, int], width: int) -> None:
+        x1, y1 = point(a.x, a.y)
+        x2, y2 = point(b.x, b.y)
+        bend = max(1.5, abs(b.x - a.x) * .32) / (max_x - min_x) * image_w
+        samples = []
+        for step in range(25):
+            t = step / 24
+            u = 1 - t
+            x = u ** 3 * x1 + 3 * u * u * t * (x1 + bend) + 3 * u * t * t * (x2 - bend) + t ** 3 * x2
+            y = u ** 3 * y1 + 3 * u * u * t * y1 + 3 * u * t * t * y2 + t ** 3 * y2
+            samples.append((x, y))
+        draw.line(samples, fill=color, width=width, joint="curve")
+
     config = next_chapters.CHAPTERS[namespace]
     stage_count = len(config["stages"])
     stage_quests: list[list[Quest]] = [[] for _ in range(stage_count)]
@@ -752,38 +765,34 @@ def make_atlas_background(path: Path, title: str, namespace: str, quests: list[Q
     if any(not cluster for cluster in stage_quests):
         raise ValueError(f"{namespace}: an empty stage cannot be decorated")
 
-    # Draw the coloured routes between the same stage entry/exit nodes used by
-    # the quest dependencies.  A stage starts at _01 and enters the next stage
-    # from its last quest, so the route reads left-to-right through the book.
-    roots = [next(quest for quest in cluster if quest.key.endswith("_01")) for cluster in stage_quests]
-    mapped_roots = [point(quest.x, quest.y) for quest in roots]
-    stage_exits = [cluster[-1] for cluster in stage_quests]
-    stage_parents = config.get("stage_parents")
-    for index in range(stage_count):
-        parents = stage_parents[index] if stage_parents is not None else ([] if index == 0 else [index - 1])
-        for parent in parents:
-            x1, y1 = point(stage_exits[parent].x, stage_exits[parent].y)
-            x2, y2 = mapped_roots[index]
-            color = palette[index % len(palette)]
-            draw.line((x1, y1, x2, y2), fill=(*color, 72), width=14)
+    by_key = {quest.key: quest for quest in quests}
+    # FTB Quests normally draws straight dependency lines.  For these 41
+    # approved chapters they are hidden and reproduced in the background with
+    # the same curved geometry as the reviewed preview.
+    for quest in quests:
+        for dependency in quest.deps:
+            parent = by_key.get(dependency)
+            if parent is not None:
+                bezier(parent, quest, (75, 72, 68, 145), 7 if parent.tag == "pta_main" and quest.tag == "pta_main" else 5)
 
-    # Keep the background deliberately clean: no decorative circles are drawn
-    # behind icons.  A chapter legend and the actual dependency paths provide
-    # the grouping without introducing a second, scale-sensitive coordinate
-    # system.
-    strip_top, strip_bottom = 150, 222
-    cell = (image_w - 128) / stage_count
-    for index, (cluster, stage) in enumerate(zip(stage_quests, config["stages"])):
+    # Draw the coloured chapter route between exact stage roots.
+    roots = [next(quest for quest in cluster if quest.key.endswith("_01")) for cluster in stage_quests]
+    for index in range(stage_count - 1):
         color = palette[index % len(palette)]
-        left = 64 + index * cell
-        right = left + cell
-        draw.rectangle((left, strip_top, right, strip_bottom),
-                       fill=(248, 244, 236, 215), outline=(103, 82, 55, 105), width=2)
-        draw.rectangle((left, strip_top, left + 8, strip_bottom), fill=(*color, 190))
+        bezier(roots[index], roots[index + 1], (*color, 48), 13)
+
+    # Stage names are anchored to the same root coordinates as in the preview.
+    for index, (root, stage) in enumerate(zip(roots, config["stages"])):
+        color = palette[index % len(palette)]
+        root_x, root_y = point(root.x, root.y)
         label = stage[1]
-        bbox = draw.textbbox((0, 0), label, font=font(15, True))
-        draw.text((left + 18, strip_top + 13), f"{index + 1:02d} · {label}",
-                  font=font(15, True), fill=(*color, 205))
+        label_font = font(18, True)
+        bbox = draw.textbbox((0, 0), label, font=label_font)
+        label_w = bbox[2] - bbox[0]
+        label_y = root_y - 78
+        draw.rounded_rectangle((root_x - 8, label_y - 5, root_x + label_w + 10, label_y + 26),
+                               radius=8, fill=(246, 240, 228, 210))
+        draw.text((root_x, label_y), label, font=label_font, fill=(*color, 225))
     path.parent.mkdir(parents=True, exist_ok=True)
     image.save(path)
 

@@ -7,6 +7,7 @@ import build_expansion_chapters as expansion_chapters
 import build_next_chapters as next_chapters_extra
 import build_followup_chapters as followup_chapters
 import build_final_chapters as final_chapters
+from atm_layout_engine import chapter_layout
 
 
 ROOT = Path(__file__).resolve().parent
@@ -654,45 +655,33 @@ def _points(pattern: str, count: int, cx: float, cy: float) -> list[tuple[float,
 
 def build_chapter(namespace: str, quest_cls, tag_main: str = "pta_main", tag_branch: str = "pta_resource"):
     config = CHAPTERS[namespace]
+    layout = chapter_layout(namespace, list(CHAPTERS).index(namespace), config)
+    incoming: dict[str, list[str]] = {node["id"]: [] for node in layout["nodes"]}
+    for parent, child in layout["edges"]:
+        incoming[child].append(parent)
+
     result = []
-    prior_root = None
-    append_control = config.get("append_control", True)
-    base_counts = [len(stage[2]) + (1 if append_control else 0) for stage in config["stages"]]
-    extras = config.get("target_count", sum(base_counts)) - sum(base_counts)
-    stage_extras = [0] * len(config["stages"])
-    for index in range(extras):
-        stage_extras[index % len(stage_extras)] += 1
-    stage_counts = [base + extra for base, extra in zip(base_counts, stage_extras)]
-    for stage_index, (phase, stage_name, configured_titles) in enumerate(config["stages"]):
-        practice = [f"Практика этапа {number + 1}: {stage_name}" for number in range(stage_extras[stage_index])]
-        titles = [*configured_titles, *practice]
-        if append_control:
-            titles.append(f"Контрольная сборка: {stage_name}")
-        cx, cy = config["centers"][stage_index]
-        points = _points(config["patterns"][stage_index], len(titles), cx, cy)
-        for quest_index, title in enumerate(titles):
-            key = f"s{stage_index + 1:02d}_{quest_index + 1:02d}"
-            item = ITEMS[namespace][stage_index][quest_index]
-            # Follow the visible route one node at a time.  This replaces the
-            # identical star used by every stage and makes rings, waves,
-            # diamonds and stairs readable in the intended direction.
-            deps = (f"s{stage_index + 1:02d}_{quest_index:02d}",) if quest_index else ()
-            if quest_index == 0:
-                stage_parents = config.get("stage_parents")
-                if stage_parents is None:
-                    deps = (f"s{stage_index:02d}_{stage_counts[stage_index - 1]:02d}",) if stage_index else ()
-                else:
-                    deps = tuple(
-                        f"s{parent + 1:02d}_{stage_counts[parent]:02d}"
-                        for parent in stage_parents[stage_index]
-                    )
-            desc = (
-                f"Урок «{title}» в этапе «{stage_name}». Получи указанный предмет и изучи его назначение через JEI или книгу мода. "
-                "Размести или испытай его в безопасной зоне, проверь входы, выходы и ограничения. "
-                "Задание засчитывается по предмету в инвентаре; после проверки сохрани рабочую сборку для следующих шагов."
-            )
-            result.append(quest_cls(key, title, phase, desc, points[quest_index][0], points[quest_index][1], "diamond" if quest_index == 0 else ("hexagon" if quest_index % 3 == 0 else "circle"), 1.45 if quest_index == 0 else 1.0, ((item, 1),), deps, (item, 1), 2 + stage_index, tag_main if quest_index == 0 else tag_branch, item))
-        prior_root = f"s{stage_index + 1:02d}_{len(titles):02d}"
+    for node in layout["nodes"]:
+        match = re.fullmatch(r"s(\d{2})_(\d{2})", node["id"])
+        if not match:
+            raise ValueError(f"{namespace}: invalid layout key {node['id']!r}")
+        stage_index = int(match.group(1)) - 1
+        quest_index = int(match.group(2)) - 1
+        phase, stage_name, _ = config["stages"][stage_index]
+        item = ITEMS[namespace][stage_index][quest_index]
+        title = node["title"]
+        desc = (
+            f"Урок «{title}» в этапе «{stage_name}». Получи указанный предмет и изучи его назначение через JEI или книгу мода. "
+            "Размести или испытай его в безопасной зоне, проверь входы, выходы и ограничения. "
+            "Задание засчитывается по предмету в инвентаре; после проверки сохрани рабочую сборку для следующих шагов."
+        )
+        main = bool(node["main"])
+        result.append(quest_cls(
+            node["id"], title, phase, desc, round(node["x"], 2), round(node["y"], 2),
+            "diamond" if main else ("hexagon" if quest_index % 3 == 0 else "circle"),
+            1.45 if main else 1.0, ((item, 1),), tuple(incoming[node["id"]]),
+            (item, 1), 2 + stage_index, tag_main if main else tag_branch, item,
+        ))
     return result
 
 
