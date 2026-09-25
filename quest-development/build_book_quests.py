@@ -86,7 +86,7 @@ ATLAS_CHAPTER_ID = "0005A2ECAFE70002"
 THREATS_CHAPTER_ID = "0005A2ECAFE70003"
 INTEGRATION_CHAPTER_ID = "0005A2ECAFE70004"
 FINALE_CHAPTER_ID = "0005A2ECAFE70005"
-PACKAGE_VERSION = "1.15.5"
+PACKAGE_VERSION = "1.15.6"
 
 
 @dataclass(frozen=True)
@@ -752,39 +752,37 @@ def make_atlas_background(path: Path, title: str, namespace: str, quests: list[Q
     if any(not cluster for cluster in stage_quests):
         raise ValueError(f"{namespace}: an empty stage cannot be decorated")
 
-    # The first quest is the stage root used by FTB Quests dependency lines.
-    # Draw the coloured routes between those exact roots so the background
-    # follows the same graph that the player sees in the quest screen.
+    # Draw the coloured routes between the same stage entry/exit nodes used by
+    # the quest dependencies.  A stage starts at _01 and enters the next stage
+    # from its last quest, so the route reads left-to-right through the book.
     roots = [next(quest for quest in cluster if quest.key.endswith("_01")) for cluster in stage_quests]
     mapped_roots = [point(quest.x, quest.y) for quest in roots]
+    stage_exits = [cluster[-1] for cluster in stage_quests]
     stage_parents = config.get("stage_parents")
     for index in range(stage_count):
         parents = stage_parents[index] if stage_parents is not None else ([] if index == 0 else [index - 1])
         for parent in parents:
-            x1, y1 = mapped_roots[parent]
+            x1, y1 = point(stage_exits[parent].x, stage_exits[parent].y)
             x2, y2 = mapped_roots[index]
             color = palette[index % len(palette)]
             draw.line((x1, y1, x2, y2), fill=(*color, 72), width=14)
 
-    # Use the same root and radius as the quest layout.  The root is therefore
-    # exactly in the centre, while every child icon lies on the ellipse line.
+    # Keep the background deliberately clean: no decorative circles are drawn
+    # behind icons.  A chapter legend and the actual dependency paths provide
+    # the grouping without introducing a second, scale-sensitive coordinate
+    # system.
+    strip_top, strip_bottom = 150, 222
+    cell = (image_w - 128) / stage_count
     for index, (cluster, stage) in enumerate(zip(stage_quests, config["stages"])):
         color = palette[index % len(palette)]
-        root = roots[index]
-        root_x, root_y = point(root.x, root.y)
-        radius_x = 6.2 / (max_x - min_x) * image_w
-        radius_y = 5.8 / (max_y - min_y) * image_h
-        left, right = root_x - radius_x, root_x + radius_x
-        top, bottom = root_y - radius_y, root_y + radius_y
-        draw.ellipse((left, top, right, bottom),
-                     fill=(*color, 12), outline=(*color, 75), width=3)
+        left = 64 + index * cell
+        right = left + cell
+        draw.rectangle((left, strip_top, right, strip_bottom),
+                       fill=(248, 244, 236, 215), outline=(103, 82, 55, 105), width=2)
+        draw.rectangle((left, strip_top, left + 8, strip_bottom), fill=(*color, 190))
         label = stage[1]
         bbox = draw.textbbox((0, 0), label, font=font(15, True))
-        label_y = max(8, top + 8)
-        draw.rounded_rectangle((root_x - (bbox[2] - bbox[0]) / 2 - 10, label_y,
-                                root_x + (bbox[2] - bbox[0]) / 2 + 10, label_y + 26),
-                               radius=9, fill=(246, 240, 228, 185))
-        draw.text((root_x - (bbox[2] - bbox[0]) / 2, label_y + 4), label,
+        draw.text((left + 18, strip_top + 13), f"{index + 1:02d} · {label}",
                   font=font(15, True), fill=(*color, 205))
     path.parent.mkdir(parents=True, exist_ok=True)
     image.save(path)

@@ -585,36 +585,70 @@ def _points(pattern: str, count: int, cx: float, cy: float) -> list[tuple[float,
     import math
     if count <= 0:
         return []
+    points: list[tuple[float, float]] = []
+    denominator = max(1, count - 1)
 
-    # Every decorated stage is a real radial cluster: the stage root occupies
-    # the exact centre used by the background, and every dependent quest sits
-    # on the same visible ellipse.  Previously the root was merely the first
-    # point of a fan/grid/pattern, so the decorative circle did not describe
-    # the actual quest positions.
-    points = [(cx, cy)]
-    branch_count = count - 1
-    if branch_count == 0:
-        return points
-
-    radius_x, radius_y = 6.2, 5.8
-    rotation = {
-        "fanR": -math.pi / 2,
-        "fanL": math.pi / 2,
-        "crescentR": -math.pi / 2,
-        "crescentL": math.pi / 2,
-        "crescentD": 0.0,
-        "diamond": math.pi / 4,
-        "grid": 0.0,
-        "mirror": math.pi / 2,
-        "star": -math.pi / 2,
-        "ritual": -math.pi / 2,
-        "containment": math.pi / 2,
-        "doubleFan": 0.0,
-        "doubleRing": math.pi / 4,
-    }.get(pattern, -math.pi / 2)
-    for index in range(branch_count):
-        angle = rotation + index * math.tau / branch_count
-        points.append((cx + math.cos(angle) * radius_x, cy + math.sin(angle) * radius_y))
+    if pattern in {"ring", "ritual", "hex"}:
+        # A readable loop with a small opening between its first and last node.
+        sweep = math.tau * .84
+        start = math.pi * .58
+        for i in range(count):
+            angle = start + sweep * i / denominator
+            points.append((cx + math.cos(angle) * 6.2, cy + math.sin(angle) * 5.5))
+    elif pattern == "doubleRing":
+        # A horizontal figure eight traversed from left to right.
+        for i in range(count):
+            t = -math.pi + math.tau * i / denominator
+            points.append((cx + math.sin(t) * 6.8, cy + math.sin(t * 2) * 4.4))
+    elif pattern == "diamond":
+        anchors = [(-6.2, 0), (0, -5.6), (6.2, 0), (0, 5.6), (-4.8, 1.3)]
+        for i in range(count):
+            t = i / denominator * (len(anchors) - 1)
+            segment = min(len(anchors) - 2, int(t))
+            fraction = t - segment
+            a, b = anchors[segment], anchors[segment + 1]
+            points.append((cx + a[0] + (b[0] - a[0]) * fraction,
+                           cy + a[1] + (b[1] - a[1]) * fraction))
+    elif pattern == "grid":
+        cols = 3
+        rows = (count + cols - 1) // cols
+        for i in range(count):
+            row, slot = divmod(i, cols)
+            col = slot if row % 2 == 0 else cols - 1 - slot
+            points.append((cx + (col - 1) * 4.2, cy + (row - (rows - 1) / 2) * 3.2))
+    elif pattern in {"stack", "mirror"}:
+        for i in range(count):
+            y = cy + (i - denominator / 2) * (10.6 / denominator)
+            amplitude = 2.4 if pattern == "stack" else 4.8
+            points.append((cx + (-1 if i % 2 else 1) * amplitude, y))
+    elif pattern == "containment":
+        # An open spiral: progression visibly moves toward the core.
+        for i in range(count):
+            t = i / denominator
+            angle = math.pi * 1.15 + t * math.tau * 1.45
+            radius = 6.4 - t * 3.4
+            points.append((cx + math.cos(angle) * radius, cy + math.sin(angle) * radius * .84))
+    elif pattern == "star":
+        # A crown shaped route without self intersections.
+        for i in range(count):
+            t = i / denominator
+            x = cx - 6.4 + 12.8 * t
+            y = cy + math.sin(t * math.pi * 4) * 3.8
+            points.append((x, y))
+    elif pattern in {"fanR", "fanL", "crescentR", "crescentL", "crescentD"}:
+        if pattern == "crescentD":
+            start, sweep = math.pi * 1.08, math.pi * .84
+        elif pattern in {"fanL", "crescentL"}:
+            start, sweep = -math.pi * .48, math.pi * .96
+        else:
+            start, sweep = math.pi * .52, math.pi * .96
+        for i in range(count):
+            angle = start + sweep * i / denominator
+            points.append((cx + math.cos(angle) * 6.4, cy + math.sin(angle) * 5.5))
+    else:  # doubleFan and any future pattern use an S curve.
+        for i in range(count):
+            t = i / denominator
+            points.append((cx - 6.5 + 13 * t, cy + math.sin((t - .5) * math.tau) * 4.4))
     return points
 
 
@@ -628,6 +662,7 @@ def build_chapter(namespace: str, quest_cls, tag_main: str = "pta_main", tag_bra
     stage_extras = [0] * len(config["stages"])
     for index in range(extras):
         stage_extras[index % len(stage_extras)] += 1
+    stage_counts = [base + extra for base, extra in zip(base_counts, stage_extras)]
     for stage_index, (phase, stage_name, configured_titles) in enumerate(config["stages"]):
         practice = [f"Практика этапа {number + 1}: {stage_name}" for number in range(stage_extras[stage_index])]
         titles = [*configured_titles, *practice]
@@ -638,20 +673,26 @@ def build_chapter(namespace: str, quest_cls, tag_main: str = "pta_main", tag_bra
         for quest_index, title in enumerate(titles):
             key = f"s{stage_index + 1:02d}_{quest_index + 1:02d}"
             item = ITEMS[namespace][stage_index][quest_index]
-            deps = (f"s{stage_index + 1:02d}_01",)
+            # Follow the visible route one node at a time.  This replaces the
+            # identical star used by every stage and makes rings, waves,
+            # diamonds and stairs readable in the intended direction.
+            deps = (f"s{stage_index + 1:02d}_{quest_index:02d}",) if quest_index else ()
             if quest_index == 0:
                 stage_parents = config.get("stage_parents")
                 if stage_parents is None:
-                    deps = (prior_root,) if prior_root else ()
+                    deps = (f"s{stage_index:02d}_{stage_counts[stage_index - 1]:02d}",) if stage_index else ()
                 else:
-                    deps = tuple(f"s{parent + 1:02d}_01" for parent in stage_parents[stage_index])
+                    deps = tuple(
+                        f"s{parent + 1:02d}_{stage_counts[parent]:02d}"
+                        for parent in stage_parents[stage_index]
+                    )
             desc = (
                 f"Урок «{title}» в этапе «{stage_name}». Получи указанный предмет и изучи его назначение через JEI или книгу мода. "
                 "Размести или испытай его в безопасной зоне, проверь входы, выходы и ограничения. "
                 "Задание засчитывается по предмету в инвентаре; после проверки сохрани рабочую сборку для следующих шагов."
             )
             result.append(quest_cls(key, title, phase, desc, points[quest_index][0], points[quest_index][1], "diamond" if quest_index == 0 else ("hexagon" if quest_index % 3 == 0 else "circle"), 1.45 if quest_index == 0 else 1.0, ((item, 1),), deps, (item, 1), 2 + stage_index, tag_main if quest_index == 0 else tag_branch, item))
-        prior_root = f"s{stage_index + 1:02d}_01"
+        prior_root = f"s{stage_index + 1:02d}_{len(titles):02d}"
     return result
 
 
