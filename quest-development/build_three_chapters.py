@@ -240,6 +240,54 @@ CHAPTERS = {
         "centers": [(0, 12), (22, 20), (44, 4), (66, 20), (88, 12)],
         "patterns": ["ring", "diamond", "fanR", "star", "doubleRing"],
     },
+    "artifacts": {
+        "title": "Artifacts: карта потерянных сокровищ", "file": "artifacts", "icon": "artifacts:crystal_heart", "target_count": 72,
+        "stages": [
+            ("I · СЛЕДЫ", "Дневник искателя", ["Карта исследователя", "Компас структур", "Провиант", "Факелы", "Точка возврата", "Полевой сундук", "Первая руина", "След сундука"]),
+            ("II · ПОДЗЕМЕЛЬЯ", "Сундуки мимиков", ["Вход в подземелье", "Ловушки", "Мимик", "Победа над мимиком", "Редкий сундук", "Ночная экспедиция", "Безопасный выход", "Повторный маршрут"]),
+            ("III · ДВИЖЕНИЕ", "Артефакты путешествий", ["Bunny Hoppers", "Running Shoes", "Cloud in a Bottle", "Umbrella", "Helium Flamingo", "Управление прыжком", "Безопасное падение", "Маршрут на время"]),
+            ("IV · ЗАЩИТА", "Артефакты выживания", ["Crystal Heart", "Plastic Drinking Hat", "Superstitious Hat", "Snorkel", "Night Vision Goggles", "Antidote Vessel", "Аварийный набор", "Тест стойкости"]),
+            ("V · БОЙ", "Артефакты воина", ["Power Glove", "Vampiric Glove", "Feral Claws", "Fire Gauntlet", "Thorn Pendant", "Shock Pendant", "Комбинация эффектов", "Испытание манекена"]),
+            ("VI · УТИЛИТЫ", "Инструменты искателя", ["Universal Attractor", "Digging Claws", "Whoopee Cushion", "Villager Hat", "Lucky Scarf", "Ключевой артефакт", "Смена комплекта", "Полевая проверка"]),
+            ("VII · КОЛЛЕКЦИЯ", "Зал находок", ["Витрина движения", "Витрина защиты", "Витрина боя", "Витрина утилит", "Редкость предметов", "Каталог эффектов", "Запасные экземпляры", "Обмен находками"]),
+            ("VIII · ЛЕГЕНДА", "Главный клад", ["Карта легенды", "Древняя структура", "Цепочка ловушек", "Элитный мимик", "Артефакт легенды", "Сборка искателя", "Забег без смерти", "Главная витрина"]),
+        ],
+        "centers": [(0, 36), (16, 39), (31, 28), (47, 12), (63, 16), (79, 35), (97, 38), (121, 21)],
+        "patterns": ["fanR", "crescentD", "ring", "star", "diamond", "crescentL", "doubleRing", "containment"],
+    },
+    "relics": {
+        "title": "Relics: музей живых реликвий", "file": "relics", "icon": "relics:chorus_staff", "target_count": 80,
+        "stage_parents": [(), (0,), (0,), (0,), (0,), (0,), (1, 2, 3, 4, 5), (6,)],
+        "stages": [
+            ("I · ПРОБУЖДЕНИЕ", "Первая реликвия", ["Найти реликвию", "Открыть описание", "Надеть предмет", "Активировать эффект", "Получить опыт", "Повысить уровень", "Проверить параметры", "Снять ограничение", "Записать результат"]),
+            ("II · АТАКА", "Реликвии атаки", ["Hunting Belt", "Shield of Retaliation", "Ring of Seven Sins", "Golden Tooth", "Активация в бою", "Серия ударов", "Контроль отката", "Опыт реликвии", "Настройка урона"]),
+            ("III · ДВИЖЕНИЕ", "Реликвии движения", ["Roller Skate", "Springy Boot", "Cut Glass Boot", "Rider Flute", "Полевой маршрут", "Прыжок и рывок", "Контроль скорости", "Опыт движения", "Настройка мобильности"]),
+            ("IV · МАГИЯ", "Реликвии энергии", ["Chorus Staff", "Clot of Time", "Jellyfish Necklace", "Experience Disperser", "Ресурс способности", "Магический откат", "Синергия чар", "Опыт магии", "Настройка эффекта"]),
+            ("V · ЗАЩИТА", "Реликвии стойкости", ["Ghostly Mantle", "Leafy Mantle", "Midnight Mantle", "Reflective Necklace", "Получение щита", "Лечение", "Сопротивление", "Опыт защиты", "Настройка стойкости"]),
+            ("VI · ИСТОЧНИКИ", "Редкие источники", ["Подземелье", "Босс", "Структурный сундук", "Редкий моб", "Торговый путь", "Поиск дубликатов", "Сравнение уровней", "Каталог источников", "Карта находок"]),
+            ("VII · МАСТЕРСКАЯ", "Развитие коллекции", ["Исследовать параметры", "Выбрать улучшение", "Проверить масштабирование", "Сбросить настройку", "Собрать опыт", "Усилить активность", "Усилить пассивность", "Синергия двух реликвий", "Синергия брони"]),
+            ("VIII · КУРАТОР", "Финальная экспозиция", ["Витрина атаки", "Витрина движения", "Витрина магии", "Витрина защиты", "Легендарный уровень", "Идеальная настройка", "Три готовых комплекта", "Испытание босса", "Главный экспонат"]),
+        ],
+        "centers": [(60, 26), (10, 6), (10, 25), (10, 44), (40, 6), (40, 44), (89, 6), (89, 44)],
+        "patterns": ["doubleRing", "grid", "mirror", "grid", "diamond", "ring", "mirror", "doubleRing"],
+    },
+    "epicfight": {
+        "title": "Epic Fight: школы боевого мастерства", "file": "epicfight", "icon": "epicfight:skillbook", "target_count": 90,
+        "stage_parents": [(), (0,), (0,), (0,), (0,), (0,), (1, 2, 3, 4, 5), (6,), (7,)],
+        "stages": [
+            ("I · ОСНОВЫ", "Контроль тела", ["Боевой режим", "Обычная атака", "Серия ударов", "Уклонение", "Выносливость", "Парирование", "Захват дистанции", "Тренировочный манекен", "Бой без брони"]),
+            ("II · МЕЧ", "Школа клинка", ["Одноручный меч", "Двуручный меч", "Стойка мечника", "Комбо клинка", "Контратака", "Пробитие защиты", "Контроль дистанции", "Навык меча", "Дуэль"]),
+            ("III · КОПЬЁ", "Школа дистанции", ["Копьё", "Длинная стойка", "Выпад", "Круговая атака", "Удержание врага", "Бой с группой", "Навык копья", "Испытание орды", "Мастерство дистанции"]),
+            ("IV · ТЯЖЁЛОЕ", "Школа мощи", ["Большой меч", "Тяжёлая стойка", "Заряженный удар", "Сбивание", "Бронебойность", "Контроль выносливости", "Тяжёлый навык", "Испытание босса", "Мастерство мощи"]),
+            ("V · ЛОВКОСТЬ", "Школа скорости", ["Кинжал", "Быстрая стойка", "Серия атак", "Удар в спину", "Уклонение в атаке", "Контроль темпа", "Навык ловкости", "Бой на время", "Мастерство скорости"]),
+            ("VI · ПОЛЁТ", "Fight or Flight", ["Pokestaff", "Воздушная цель", "Воздушная атака", "Уклонение в воздухе", "Приземление", "Летающий покемон", "Воздушный моб", "Серия без падения", "Небесная арена"]),
+            ("VII · СИНТЕЗ", "Экзамен мастера", ["Смена оружия", "Смена стойки", "Комбо двух школ", "Контрстиль", "Бой с группой", "Бой с элитой", "Бой с боссом", "Без лечения", "Без поражений"]),
+            ("VIII · ТУРНИР", "Лестница бойцов", ["Регистрация", "Отборочный бой", "Первый раунд", "Четвертьфинал", "Полуфинал", "Финал", "Серия побед", "Защита титула", "Кубок островов"]),
+            ("IX · ЛЕГЕНДА", "Совершенный воин", ["Все школы", "Идеальное парирование", "Безупречное уклонение", "Воздушное комбо", "Легендарное оружие", "Полный набор навыков", "Главный босс", "Испытание создателя", "Зал славы"]),
+        ],
+        "centers": [(0, 26), (25, 7), (25, 19), (25, 33), (25, 46), (56, 8), (73, 26), (92, 26), (112, 26)],
+        "patterns": ["fanR", "grid", "diamond", "mirror", "ring", "star", "doubleRing", "containment", "doubleRing"],
+    },
     "apotheosis": {
         "title": "Apotheosis: кузница героя", "file": "apotheosis", "icon": "apotheosis:reforging_table", "target_count": 76,
         "stages": [
@@ -444,6 +492,39 @@ ITEMS["achievements"] = _generated_rows([
     "minecraft:elytra", "minecraft:dragon_egg", "minecraft:netherite_ingot", "minecraft:heart_of_the_sea",
     "minecraft:conduit", "minecraft:totem_of_undying", "minecraft:shulker_box", "minecraft:lodestone",
 ], _target_stage_counts("achievements"))
+ITEMS["artifacts"] = _generated_rows([
+    "artifacts:anglers_hat", "artifacts:antidote_vessel", "artifacts:aqua_dashers", "artifacts:bunny_hoppers",
+    "artifacts:charm_of_shrinking", "artifacts:charm_of_sinking", "artifacts:chorus_totem", "artifacts:cloud_in_a_bottle",
+    "artifacts:cowboy_hat", "artifacts:cross_necklace", "artifacts:crystal_heart", "artifacts:digging_claws",
+    "artifacts:eternal_steak", "artifacts:everlasting_beef", "artifacts:feral_claws", "artifacts:fire_gauntlet",
+    "artifacts:flame_pendant", "artifacts:flippers", "artifacts:golden_hook", "artifacts:helium_flamingo",
+    "artifacts:kitty_slippers", "artifacts:lucky_scarf", "artifacts:night_vision_goggles", "artifacts:obsidian_skull",
+    "artifacts:panic_necklace", "artifacts:pickaxe_heater", "artifacts:pocket_piston", "artifacts:power_glove",
+    "artifacts:running_shoes", "artifacts:scarf_of_invisibility", "artifacts:shock_pendant", "artifacts:snorkel",
+    "artifacts:snowshoes", "artifacts:steadfast_spikes", "artifacts:strider_shoes", "artifacts:thorn_pendant",
+    "artifacts:umbrella", "artifacts:universal_attractor", "artifacts:vampiric_glove", "artifacts:villager_hat",
+    "artifacts:warp_drive", "artifacts:whoopee_cushion", "artifacts:withered_bracelet",
+], _target_stage_counts("artifacts"))
+ITEMS["relics"] = _generated_rows([
+    "relics:chef_hat", "relics:chorus_staff", "relics:clot_of_time", "relics:cooked_meatball",
+    "relics:cut_glass_boot", "relics:experience_disperser", "relics:ghostly_mantle", "relics:glitchy_mantle",
+    "relics:golden_tooth", "relics:hunting_belt", "relics:jellyfish_necklace", "relics:kinetic_belt",
+    "relics:leafy_mantle", "relics:midnight_mantle", "relics:pet_bone", "relics:piglin_mask",
+    "relics:reflective_necklace", "relics:relic_experience_bottle", "relics:rider_flute",
+    "relics:ring_of_the_seven_deadly_sins", "relics:roller_skate", "relics:shield_of_retaliation",
+    "relics:sphere_of_self_sacrifice", "relics:springy_boot",
+], _target_stage_counts("relics"))
+ITEMS["epicfight"] = _generated_rows([
+    "epicfight:bokken", "epicfight:wooden_dagger", "epicfight:stone_dagger", "epicfight:iron_dagger",
+    "epicfight:diamond_dagger", "epicfight:netherite_dagger", "epicfight:wooden_longsword", "epicfight:stone_longsword",
+    "epicfight:iron_longsword", "epicfight:diamond_longsword", "epicfight:netherite_longsword",
+    "epicfight:wooden_greatsword", "epicfight:stone_greatsword", "epicfight:iron_greatsword",
+    "epicfight:diamond_greatsword", "epicfight:netherite_greatsword", "epicfight:wooden_spear",
+    "epicfight:stone_spear", "epicfight:iron_spear", "epicfight:diamond_spear", "epicfight:netherite_spear",
+    "epicfight:wooden_tachi", "epicfight:stone_tachi", "epicfight:iron_tachi", "epicfight:diamond_tachi",
+    "epicfight:netherite_tachi", "epicfight:uchigatana", "epicfight:skillbook", "epicfight:glove",
+    "fightorflight:pokestaff", "fightorflight:oran_lucky_egg", "minecraft:shield", "minecraft:bow",
+], _target_stage_counts("epicfight"))
 ITEMS["apotheosis"] = _generated_rows([
     "apotheosis:gem_dust", "irons_spellbooks:chronicle", "apotheosis:salvaging_table", "apotheosis:reforging_table",
     "apotheosis:common_material", "apotheosis:gem", "apotheosis:gem_cutting_table", "apotheosis:uncommon_material",
@@ -547,9 +628,13 @@ def build_chapter(namespace: str, quest_cls, tag_main: str = "pta_main", tag_bra
         for quest_index, title in enumerate(titles):
             key = f"s{stage_index + 1:02d}_{quest_index + 1:02d}"
             item = ITEMS[namespace][stage_index][quest_index]
-            deps = (prior_root,) if quest_index == 0 and prior_root else (f"s{stage_index + 1:02d}_01",)
+            deps = (f"s{stage_index + 1:02d}_01",)
             if quest_index == 0:
-                deps = (prior_root,) if prior_root else ()
+                stage_parents = config.get("stage_parents")
+                if stage_parents is None:
+                    deps = (prior_root,) if prior_root else ()
+                else:
+                    deps = tuple(f"s{parent + 1:02d}_01" for parent in stage_parents[stage_index])
             result.append(quest_cls(key, title, phase, f"Практический урок этапа «{stage_name}». Выполни действие и проверь результат перед переходом дальше.", points[quest_index][0], points[quest_index][1], "diamond" if quest_index == 0 else ("hexagon" if quest_index % 3 == 0 else "circle"), 1.45 if quest_index == 0 else 1.0, ((item, 1),), deps, (item, 1), 2 + stage_index, tag_main if quest_index == 0 else tag_branch, item))
         prior_root = f"s{stage_index + 1:02d}_01"
     return result
