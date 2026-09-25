@@ -6,7 +6,7 @@ import random
 import re
 import shutil
 import zipfile
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
@@ -86,7 +86,7 @@ ATLAS_CHAPTER_ID = "0005A2ECAFE70002"
 THREATS_CHAPTER_ID = "0005A2ECAFE70003"
 INTEGRATION_CHAPTER_ID = "0005A2ECAFE70004"
 FINALE_CHAPTER_ID = "0005A2ECAFE70005"
-PACKAGE_VERSION = "1.15.3"
+PACKAGE_VERSION = "1.15.4"
 
 
 @dataclass(frozen=True)
@@ -268,6 +268,245 @@ ATLAS = next_chapters.build_chapter("atlas", Quest)
 THREATS = next_chapters.build_chapter("threats", Quest)
 INTEGRATION = next_chapters.build_chapter("integration", Quest)
 FINALE = next_chapters.build_chapter("finale", Quest)
+
+
+QUEST_LISTS = {
+    "skyblock": "SKY", "create": "CREATE", "immersive": "IMMERSIVE", "mekanism": "MEK",
+    "ae2": "AE2", "appmek": "APPMEK", "ars": "ARS", "occult": "OCCULT", "evil": "EVIL",
+    "fna": "FNA", "irons": "IRONS", "farmer": "FARMER", "mystical": "MYSTICAL",
+    "pokemon": "POKEMON", "trainers": "TRAINERS", "endgame": "ENDGAME",
+    "apotheosis": "APOTHEOSIS", "cataclysm": "CATACLYSM", "draconic": "DRACONIC",
+    "vampirism": "VAMPIRISM", "cobblemon_advanced": "COBBLEMON_ADVANCED",
+    "achievements": "ACHIEVEMENTS", "artifacts": "ARTIFACTS", "relics": "RELICS",
+    "epicfight": "EPICFIGHT", "minecolonies": "MINECOLONIES", "oritech": "ORITECH",
+    "silentgear": "SILENTGEAR", "cobbleplus": "COBBLEPLUS", "worldbosses": "WORLDBOSSES",
+    "createplus": "CREATEPLUS", "traveler": "TRAVELER", "builder": "BUILDER", "swem": "SWEM",
+    "origins": "ORIGINS", "starlight": "STARLIGHT", "wildlife": "WILDLIFE",
+    "arsplus": "ARSPLUS", "mekplus": "MEKPLUS", "community": "COMMUNITY",
+    "services": "SERVICES", "atlas": "ATLAS", "threats": "THREATS",
+    "integration": "INTEGRATION", "finale": "FINALE",
+}
+
+MOD_NAMES = {
+    "skyblock": "Ex Deorum и Ex Machinis", "create": "Create", "immersive": "Immersive Engineering",
+    "mekanism": "Mekanism", "ae2": "Applied Energistics 2", "appmek": "Applied Mekanistics",
+    "ars": "Ars Nouveau", "occult": "Occultism", "evil": "EvilCraft",
+    "fna": "Forbidden & Arcanus", "irons": "Iron's Spells", "farmer": "Farmer's Delight",
+    "mystical": "Mystical Agriculture", "pokemon": "Cobblemon", "trainers": "системе тренеров и данжей",
+    "endgame": "эндгейме PokeTech Arcana", "apotheosis": "Apotheosis", "cataclysm": "Cataclysm",
+    "draconic": "Draconic Evolution", "vampirism": "Vampirism", "cobblemon_advanced": "Cobblemon",
+    "achievements": "достижениях сервера", "artifacts": "Artifacts", "relics": "Relics",
+    "epicfight": "Epic Fight", "minecolonies": "MineColonies", "oritech": "Oritech",
+    "silentgear": "Silent Gear", "cobbleplus": "расширениях Cobblemon", "worldbosses": "мирах и боссах",
+    "createplus": "Create", "traveler": "путешествиях", "builder": "строительстве", "swem": "SWEM",
+    "origins": "NeoOrigins", "starlight": "Eternal Starlight", "wildlife": "исследовании природы",
+    "arsplus": "Ars Nouveau", "mekplus": "Mekanism", "community": "серверном сообществе",
+    "services": "сервисах Cobblemon", "atlas": "исследовании структур и миров",
+    "threats": "охоте на опасных существ", "integration": "интеграциях модов", "finale": "финале сборки",
+}
+
+CHAPTER_FOCUS = {
+    "skyblock": "возобновляемую добычу ресурсов и безопасное расширение острова",
+    "create": "кинетические линии, обработку деталей и автоматическую сборку покеболов",
+    "immersive": "тяжёлые многоблочные машины, электросеть и промышленную переработку",
+    "mekanism": "энергосеть, фабрики, химическую переработку и реакторы",
+    "ae2": "ME-сеть, каналы, цифровое хранение и автокрафт",
+    "appmek": "хранение газов и химикатов внутри ME-сети",
+    "ars": "создание заклинаний, управление Source и магическую автоматизацию",
+    "occult": "ритуалы, духов, удалённое хранение и добычу ресурсов",
+    "evil": "кровь, тёмную энергию и автоматизацию EvilCraft",
+    "fna": "Aureal, Hephaestus Forge и улучшение магических реликвий",
+    "irons": "заклинания, руны, чернила и экипировку мага",
+    "farmer": "устойчивое хозяйство, кухню и снабжение острова едой",
+    "mystical": "выращивание ресурсов и автоматическую переработку эссенций",
+    "pokemon": "поимку, лечение, развитие и подготовку команды покемонов",
+    "trainers": "подготовку к боям с тренерами, башням, рейдам и данжам",
+    "endgame": "объединение технологических, магических и покемонских систем",
+    "apotheosis": "самоцветы, перековку, зачарования и развитие экипировки",
+    "cataclysm": "разведку цитаделей и подготовку к сложным боссам",
+    "draconic": "энергохранилища, реактор и высокоуровневую экипировку",
+    "vampirism": "развитие вампира или охотника и связанные ритуалы",
+    "cobblemon_advanced": "коллекцию, разведение, редкие формы и легендарных покемонов",
+    "achievements": "долгосрочные цели и подтверждение общего развития игрока",
+    "artifacts": "поиск полезных аксессуаров и подбор снаряжения под стиль игры",
+    "relics": "развитие и настройку реликвий без выдачи готовых редких предметов",
+    "epicfight": "боевые стойки, навыки и безопасную подготовку к сражениям",
+    "minecolonies": "рост колонии, снабжение жителей и строительную логистику",
+    "oritech": "энергетику, переработку и орбитальную промышленность",
+    "silentgear": "чертежи, материалы и сборку настраиваемого снаряжения",
+    "cobbleplus": "питомники, рейды и дополнительные системы Cobblemon",
+    "worldbosses": "экспедиционное снабжение и последовательное прохождение боссов",
+    "createplus": "масштабирование фабрик Create и транспортировку ресурсов",
+    "traveler": "безопасные маршруты, навигацию и полевое снабжение",
+    "builder": "планирование построек, палитры блоков и удобство строительства",
+    "swem": "уход за лошадьми, конюшню, тренировки и разведение",
+    "origins": "освоение сильных и слабых сторон выбранного происхождения",
+    "starlight": "исследование измерения, его материалов и боссов",
+    "wildlife": "наблюдение за существами и безопасное освоение биомов",
+    "arsplus": "продвинутые школы заклинаний и магические производственные линии",
+    "mekplus": "полный энергетический комплекс Mekanism и его безопасность",
+    "community": "общие постройки, роли игроков и серверные проекты",
+    "services": "Pokédex, хранение команд, обмен и полевые инструменты тренера",
+    "atlas": "поиск структур, картографию и подготовку экспедиций",
+    "threats": "разведку опасностей, безопасную дистанцию и трофеи существ",
+    "integration": "связь машин, магии и хранения между разными модами",
+    "finale": "итоговый проект сервера и применение всех освоенных систем",
+}
+
+DEFAULT_REWARDS = (
+    ("minecraft:torch", 12), ("minecraft:bread", 6), ("minecraft:oak_planks", 12),
+    ("minecraft:iron_ingot", 3), ("minecraft:redstone", 6), ("minecraft:experience_bottle", 4),
+)
+
+REWARD_POOLS: dict[str, tuple[tuple[str, int], ...]] = {}
+
+
+def reward_pool(namespaces: str, *entries: tuple[str, int]) -> None:
+    for namespace in namespaces.split():
+        REWARD_POOLS[namespace] = entries
+
+
+reward_pool("skyblock", ("minecraft:dirt", 8), ("minecraft:cobblestone", 16), ("minecraft:oak_planks", 16), ("minecraft:torch", 12), ("minecraft:bone_meal", 6), ("minecraft:bucket", 1))
+reward_pool("create createplus", ("create:andesite_alloy", 4), ("create:shaft", 8), ("create:cogwheel", 6), ("create:belt_connector", 4), ("minecraft:copper_ingot", 4), ("minecraft:redstone", 6))
+reward_pool("immersive", ("minecraft:iron_ingot", 4), ("minecraft:copper_ingot", 4), ("minecraft:coal", 8), ("minecraft:redstone", 6), ("minecraft:oak_log", 8), ("minecraft:scaffolding", 8))
+reward_pool("mekanism mekplus", ("mekanism:ingot_osmium", 4), ("mekanism:alloy_infused", 2), ("mekanism:basic_control_circuit", 2), ("minecraft:redstone", 8), ("minecraft:iron_ingot", 4), ("minecraft:coal", 8))
+reward_pool("ae2", ("ae2:certus_quartz_crystal", 4), ("ae2:fluix_crystal", 2), ("ae2:silicon", 4), ("ae2:quartz_fiber", 4), ("minecraft:redstone", 6), ("minecraft:iron_ingot", 3))
+reward_pool("appmek integration", ("ae2:certus_quartz_crystal", 4), ("mekanism:ingot_osmium", 3), ("ae2:fluix_crystal", 2), ("minecraft:redstone", 6), ("minecraft:iron_ingot", 3), ("minecraft:copper_ingot", 3))
+reward_pool("oritech", ("minecraft:copper_ingot", 5), ("minecraft:iron_ingot", 4), ("minecraft:redstone", 6), ("minecraft:coal", 8), ("minecraft:glass", 6), ("minecraft:quartz", 4))
+reward_pool("silentgear", ("minecraft:iron_ingot", 4), ("minecraft:leather", 4), ("minecraft:string", 8), ("minecraft:flint", 6), ("minecraft:paper", 8), ("minecraft:lapis_lazuli", 6))
+reward_pool("ars arsplus", ("ars_nouveau:source_gem", 4), ("ars_nouveau:magebloom_fiber", 4), ("ars_nouveau:blank_parchment", 2), ("minecraft:amethyst_shard", 4), ("minecraft:lapis_lazuli", 6), ("minecraft:paper", 8))
+reward_pool("occult", ("occultism:otherworld_wood", 4), ("occultism:demonic_meat", 2), ("occultism:chalk_white", 1), ("minecraft:candle", 4), ("minecraft:string", 8), ("minecraft:quartz", 4))
+reward_pool("evil", ("evilcraft:dark_gem", 2), ("evilcraft:condensed_blood", 2), ("minecraft:glass_bottle", 6), ("minecraft:rotten_flesh", 8), ("minecraft:redstone", 5), ("minecraft:iron_ingot", 3))
+reward_pool("fna", ("forbidden_arcanus:arcane_crystal_dust", 4), ("forbidden_arcanus:arcane_crystal", 2), ("minecraft:amethyst_shard", 4), ("minecraft:quartz", 4), ("minecraft:iron_ingot", 3), ("minecraft:experience_bottle", 4))
+reward_pool("irons", ("irons_spellbooks:magic_cloth", 3), ("irons_spellbooks:fire_rune", 1), ("minecraft:paper", 8), ("minecraft:lapis_lazuli", 6), ("minecraft:amethyst_shard", 4), ("minecraft:experience_bottle", 4))
+reward_pool("vampirism", ("vampirism:garlic", 4), ("vampirism:blood_bottle", 2), ("vampirism:injection_empty", 2), ("minecraft:glass_bottle", 6), ("minecraft:iron_ingot", 3), ("minecraft:bread", 6))
+reward_pool("farmer", ("minecraft:bone_meal", 8), ("minecraft:wheat", 8), ("minecraft:carrot", 8), ("minecraft:hay_block", 2), ("minecraft:dirt", 8), ("minecraft:oak_fence", 8), ("minecraft:lead", 1))
+reward_pool("mystical", ("mysticalagriculture:inferium_essence", 8), ("mysticalagriculture:prosperity_shard", 4), ("minecraft:bone_meal", 8), ("minecraft:dirt", 8), ("minecraft:redstone", 5), ("minecraft:iron_ingot", 3))
+reward_pool("pokemon cobblemon_advanced cobbleplus trainers services", ("cobblemon:poke_ball", 4), ("cobblemon:potion", 2), ("cobblemon:exp_candy_xs", 4), ("cobblemon:red_apricorn", 4), ("cobblemon:blue_apricorn", 4), ("minecraft:cooked_beef", 6))
+reward_pool("minecolonies", ("minecraft:oak_log", 12), ("minecraft:stone_bricks", 16), ("minecraft:bread", 8), ("minecraft:iron_ingot", 4), ("minecraft:glass", 8), ("minecraft:torch", 12))
+reward_pool("swem", ("minecraft:apple", 8), ("minecraft:hay_block", 3), ("minecraft:lead", 1), ("minecraft:wheat", 8), ("minecraft:carrot", 8), ("minecraft:oak_fence", 8))
+reward_pool("traveler atlas starlight wildlife", ("minecraft:torch", 16), ("minecraft:cooked_beef", 8), ("minecraft:paper", 8), ("minecraft:oak_planks", 12), ("minecraft:arrow", 16), ("minecraft:golden_carrot", 4))
+reward_pool("builder community", ("minecraft:stone_bricks", 16), ("minecraft:oak_planks", 16), ("minecraft:glass", 8), ("minecraft:scaffolding", 8), ("minecraft:lantern", 4), ("minecraft:white_banner", 2))
+reward_pool("epicfight cataclysm worldbosses threats", ("minecraft:arrow", 16), ("minecraft:cooked_beef", 8), ("minecraft:golden_carrot", 4), ("minecraft:iron_ingot", 4), ("minecraft:obsidian", 3), ("minecraft:experience_bottle", 4))
+reward_pool("apotheosis artifacts relics", ("minecraft:experience_bottle", 5), ("minecraft:lapis_lazuli", 8), ("minecraft:bread", 6), ("minecraft:torch", 12), ("minecraft:iron_ingot", 3), ("minecraft:bookshelf", 2))
+reward_pool("draconic endgame finale", ("minecraft:redstone", 8), ("minecraft:gold_ingot", 3), ("minecraft:diamond", 1), ("minecraft:experience_bottle", 6), ("minecraft:golden_carrot", 5), ("minecraft:obsidian", 4))
+reward_pool("origins", ("minecraft:bread", 6), ("minecraft:leather", 4), ("minecraft:feather", 8), ("minecraft:arrow", 12), ("minecraft:golden_carrot", 4), ("minecraft:ender_pearl", 1))
+reward_pool("achievements", ("minecraft:firework_rocket", 8), ("minecraft:experience_bottle", 6), ("minecraft:golden_carrot", 6), ("minecraft:emerald", 2), ("minecraft:diamond", 1), ("minecraft:torch", 16))
+
+RARE_REWARD_PARTS = (
+    "nether_star", "dragon_egg", "chaos", "antimatter", "awakened", "creative", "master_ball",
+    "eternal_stella", "insanium", "supremium", "legendary", "mythic", "totem_of_undying",
+    "elytra", "netherite", "beacon", "deorum_ingot", "stella_arcanum", "mega_stone",
+    "red_orb", "blue_orb", "griseous_orb", "adamant_orb", "azure_flute",
+)
+
+ALL_TASK_ITEMS = {
+    item_id
+    for list_name in QUEST_LISTS.values()
+    for quest in globals()[list_name]
+    for item_id, _ in quest.tasks
+}
+
+
+def pretty_item(item_id: str) -> str:
+    namespace, name = item_id.split(":", 1)
+    label = name.replace("_", " ").replace("/", " ").strip().title()
+    mod = namespace.replace("_", " ").title()
+    return f"{label} ({mod})"
+
+
+def obtain_advice(item_id: str) -> str:
+    namespace, name = item_id.split(":", 1)
+    if name.endswith("_spawn_egg"):
+        return "Используй яйца призыва внутри огороженного и освещённого загона, чтобы животные не упали с острова."
+    if namespace in {"artifacts", "relics"}:
+        return "Проверь предмет в JEI: такие находки обычно добываются в сундуках структур, с мимиков или за исследование, а не обычным крафтом."
+    if namespace in {"cataclysm", "mowziesmobs", "bosses_of_mass_destruction", "block_factorys_bosses", "born_in_chaos_v1", "mutantmonsters"}:
+        return "Сначала нажми R в JEI. Если рецепта нет, подготовь еду, точку возврата и свободный инвентарь: предмет является трофеем существа или структуры."
+    if any(part in name for part in ("ingot", "dust", "nugget", "shard", "essence", "crystal", "gem", "chunk", "plate", "wire")):
+        return "Нажми R по предмету в JEI и выбери доступную цепочку переработки; начни с сырья и проверь требуемую машину, температуру или реагент."
+    if any(part in name for part in ("seed", "sapling", "crop", "food", "bread", "meat", "apple", "carrot", "wheat", "apricorn")):
+        return "Получи первый экземпляр через крафт, урожай или добычу, затем организуй возобновляемый запас до расходования предмета."
+    if any(part in name for part in ("sword", "axe", "pickaxe", "shovel", "hoe", "helmet", "chestplate", "leggings", "boots", "shield", "bow", "staff", "wand")):
+        return "Открой рецепт в JEI, подготовь материалы нужного уровня и изготовь предмет; перед боем проверь прочность, зачарования и подходящую стойку."
+    if any(part in name for part in ("machine", "factory", "furnace", "generator", "reactor", "controller", "press", "crusher", "sieve", "hammer", "storage", "tank", "cell", "cable", "pipe", "gearbox", "motor")):
+        return "Собери компоненты по рецепту JEI снизу вверх, установи устройство в безопасной тестовой линии и только затем подключай питание, жидкости или сеть."
+    return "Нажми R по значку цели в JEI, чтобы увидеть рецепт или способ получения; если рецепта нет, проверь книгу мода, структуры и таблицы добычи."
+
+
+def educational_description(namespace: str, quest: Quest) -> str:
+    goals = ", ".join(f"{count}× {pretty_item(item_id)}" for item_id, count in quest.tasks)
+    first_item = quest.tasks[0][0]
+    return (
+        f"Для задания «{quest.title}» подготовь {goals}. {obtain_advice(first_item)} "
+        f"В {MOD_NAMES[namespace]} этот шаг развивает {CHAPTER_FOCUS[namespace]}. "
+        "После получения нажми U в JEI, посмотри применения предмета и испытай его в небольшой рабочей сборке перед масштабированием."
+    )
+
+
+ANIMAL_EGG_REWARDS = (
+    (("коровник", "cow barn"), ("minecraft:cow_spawn_egg", 2)),
+    (("курятник", "куриный загон", "chicken coop"), ("minecraft:chicken_spawn_egg", 2)),
+    (("овчарня", "пастух", "sheep pen"), ("minecraft:sheep_spawn_egg", 2)),
+    (("свинарник", "pig pen"), ("minecraft:pig_spawn_egg", 2)),
+)
+
+
+def balanced_reward(namespace: str, quest: Quest) -> tuple[str, int]:
+    title = quest.title.lower()
+    if namespace in {"farmer", "minecolonies"}:
+        for terms, reward in ANIMAL_EGG_REWARDS:
+            if any(term in title for term in terms):
+                return reward
+    if namespace == "skyblock":
+        special = {
+            "start": ("minecraft:dirt", 8), "tree": ("minecraft:dirt", 4),
+            "sapling": ("minecraft:bone_meal", 6), "barrel": ("minecraft:oak_leaves", 12),
+            "compost": ("minecraft:cobblestone", 16), "water": ("minecraft:bucket", 1),
+        }
+        if quest.key in special:
+            return special[quest.key]
+
+    task_items = {item_id for item_id, _ in quest.tasks}
+    candidates = []
+    for item_id, count in REWARD_POOLS.get(namespace, DEFAULT_REWARDS):
+        if item_id in task_items or any(part in item_id for part in RARE_REWARD_PARTS):
+            continue
+        if not item_id.startswith("minecraft:") and item_id not in ALL_TASK_ITEMS:
+            continue
+        candidates.append((item_id, count))
+    if not candidates:
+        candidates = [entry for entry in DEFAULT_REWARDS if entry[0] not in task_items]
+    seed = int(hashlib.sha256(f"reward-v3:{namespace}:{quest.key}".encode()).hexdigest()[:8], 16)
+    return candidates[seed % len(candidates)]
+
+
+def refine_quest(namespace: str, quest: Quest) -> Quest:
+    generic = quest.desc.startswith("Урок «")
+    if generic:
+        description = educational_description(namespace, quest)
+    else:
+        goals = ", ".join(f"{count}× {pretty_item(item_id)}" for item_id, count in quest.tasks)
+        description = (
+            f"{quest.desc.rstrip()} Цель этапа: {goals}. {obtain_advice(quest.tasks[0][0])} "
+            f"Этот шаг помогает освоить {CHAPTER_FOCUS[namespace]}; после получения нажми U в JEI и проверь дальнейшие применения предмета."
+        )
+    reward = balanced_reward(namespace, quest)
+    stage_root = quest.key.endswith("_01") or quest.key in MILESTONES_PREVIEW.get(namespace, ())
+    xp = 2 if stage_root else 1
+    return replace(quest, desc=description, reward=reward, xp=xp)
+
+
+MILESTONES_PREVIEW = {
+    "skyblock": ("start", "sieve", "cobble", "ores", "generator", "autohammer", "core"),
+    "mekanism": ("osmium", "enrichment", "cables", "basicfactory", "purification", "wind", "fusion"),
+    "create": ("rotation", "casing", "belt", "red_sheet", "deployer", "special_series", "auto_factory"),
+    "immersive": ("manual", "cokeoven", "blastfurnace", "lv_network", "current_transformer", "metal_press", "biodiesel", "arc_furnace", "industrial_complex"),
+}
+
+for _namespace, _list_name in QUEST_LISTS.items():
+    globals()[_list_name] = [refine_quest(_namespace, quest) for quest in globals()[_list_name]]
+
 MILESTONES = {
     "skyblock": {"start": 1, "sieve": 2, "cobble": 3, "ores": 4, "generator": 5, "autohammer": 6, "core": 7},
     "mekanism": {"osmium": 1, "enrichment": 2, "cables": 3, "basicfactory": 4, "purification": 5, "wind": 6, "fusion": 7},
@@ -415,8 +654,8 @@ def language_for(namespace: str, chapter_id: str, title: str, quests: list[Quest
             f"\t\t{q('&6&l' + quest.phase)}",
             f"\t\t{q('&8' + quest.desc)}",
             "\t\t\"\"",
-            f"\t\t{q('&9▶ Цель: &0' + ', '.join(str(c) + '× ' + i for i, c in quest.tasks))}",
-            f"\t\t{q('&2◆ Награда: &0' + str(quest.reward[1]) + '× ' + quest.reward[0] + ' и ' + str(quest.xp) + ' ур. опыта')}",
+            f"\t\t{q('&9▶ Цель: &0' + ', '.join(str(c) + '× ' + pretty_item(i) for i, c in quest.tasks))}",
+            f"\t\t{q('&2◆ Награда: &0' + str(quest.reward[1]) + '× ' + pretty_item(quest.reward[0]) + ' и ' + str(quest.xp) + ' ур. опыта')}",
             "\t]",
         ]
     lines.append("}")
