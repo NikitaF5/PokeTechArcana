@@ -86,7 +86,7 @@ ATLAS_CHAPTER_ID = "0005A2ECAFE70002"
 THREATS_CHAPTER_ID = "0005A2ECAFE70003"
 INTEGRATION_CHAPTER_ID = "0005A2ECAFE70004"
 FINALE_CHAPTER_ID = "0005A2ECAFE70005"
-PACKAGE_VERSION = "1.15.4"
+PACKAGE_VERSION = "1.15.5"
 
 
 @dataclass(frozen=True)
@@ -766,27 +766,25 @@ def make_atlas_background(path: Path, title: str, namespace: str, quests: list[Q
             color = palette[index % len(palette)]
             draw.line((x1, y1, x2, y2), fill=(*color, 72), width=14)
 
-    # Fit every zone to its actual quest cluster.  The earlier fixed radii
-    # left fan, ring, grid and diamond layouts outside their own circles.
+    # Use the same root and radius as the quest layout.  The root is therefore
+    # exactly in the centre, while every child icon lies on the ellipse line.
     for index, (cluster, stage) in enumerate(zip(stage_quests, config["stages"])):
         color = palette[index % len(palette)]
-        points = [point(quest.x, quest.y) for quest in cluster]
-        xs = [xy[0] for xy in points]
-        ys = [xy[1] for xy in points]
-        pad_x = max(22, image_w / width_units * 1.35)
-        pad_y = max(22, image_h / height_units * 1.35)
-        left, right = min(xs) - pad_x, max(xs) + pad_x
-        top, bottom = min(ys) - pad_y, max(ys) + pad_y
-        x, y = (left + right) / 2, (top + bottom) / 2
+        root = roots[index]
+        root_x, root_y = point(root.x, root.y)
+        radius_x = 6.2 / (max_x - min_x) * image_w
+        radius_y = 5.8 / (max_y - min_y) * image_h
+        left, right = root_x - radius_x, root_x + radius_x
+        top, bottom = root_y - radius_y, root_y + radius_y
         draw.ellipse((left, top, right, bottom),
                      fill=(*color, 12), outline=(*color, 75), width=3)
         label = stage[1]
         bbox = draw.textbbox((0, 0), label, font=font(15, True))
         label_y = max(8, top + 8)
-        draw.rounded_rectangle((x - (bbox[2] - bbox[0]) / 2 - 10, label_y,
-                                x + (bbox[2] - bbox[0]) / 2 + 10, label_y + 26),
+        draw.rounded_rectangle((root_x - (bbox[2] - bbox[0]) / 2 - 10, label_y,
+                                root_x + (bbox[2] - bbox[0]) / 2 + 10, label_y + 26),
                                radius=9, fill=(246, 240, 228, 185))
-        draw.text((x - (bbox[2] - bbox[0]) / 2, label_y + 4), label,
+        draw.text((root_x - (bbox[2] - bbox[0]) / 2, label_y + 4), label,
                   font=font(15, True), fill=(*color, 205))
     path.parent.mkdir(parents=True, exist_ok=True)
     image.save(path)

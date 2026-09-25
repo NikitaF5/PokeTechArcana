@@ -583,55 +583,38 @@ def _pool(filename: str) -> list[str]:
 
 def _points(pattern: str, count: int, cx: float, cy: float) -> list[tuple[float, float]]:
     import math
-    points = []
-    if pattern in {"ring", "ritual"}:
-        for i in range(count):
-            a = -math.pi / 2 + i * math.pi * 2 / count
-            points.append((cx + math.cos(a) * 5.2, cy + math.sin(a) * 4.8))
-    elif pattern == "doubleRing":
-        for i in range(count):
-            ring, slot, n = i % 2, i // 2, (count + 1) // 2
-            a = -math.pi / 2 + slot * math.pi * 2 / n
-            radius = 6.2 if ring else 4.0
-            points.append((cx + math.cos(a) * radius, cy + math.sin(a) * (radius * .9)))
-    elif pattern == "diamond":
-        anchors = [(0, -6), (5.5, 0), (0, 6), (-5.5, 0)]
-        for i in range(count):
-            t = i / count * 4; j = int(t); f = t - j; a = anchors[j % 4]; b = anchors[(j + 1) % 4]
-            points.append((cx + a[0] + (b[0] - a[0]) * f, cy + a[1] + (b[1] - a[1]) * f))
-    elif pattern == "grid":
-        cols, dx, dy = 3, 3.4, 3.1
-        for i in range(count):
-            row, col, rows = i // cols, i % cols, (count + cols - 1) // cols
-            points.append((cx + (col - 1) * dx, cy + (row - (rows - 1) / 2) * dy))
-    elif pattern in {"stack", "mirror"}:
-        for i in range(count):
-            row = i // 2 if pattern == "mirror" else i
-            side = (-1 if i % 2 else 1) if pattern == "mirror" else 1
-            points.append((cx + side * (6.2 if pattern == "mirror" else 5.8), cy + (row - ((count + 1) // 2 - 1) / 2) * 3.1))
-    elif pattern == "hex":
-        for i in range(count):
-            a = -math.pi / 2 + i * math.pi * 2 / count
-            points.append((cx + math.cos(a) * 6, cy + math.sin(a) * 5.5))
-    elif pattern == "containment":
-        for i in range(count):
-            a = -math.pi / 2 + i * math.pi * 2 / count
-            r = 4.2 + i * .35
-            points.append((cx + math.cos(a) * r, cy + math.sin(a) * r * .9))
-    elif pattern == "star":
-        for i in range(count):
-            a = -math.pi / 2 + i * math.pi * 2 / count; r = 3.1 if i % 2 else 6.2
-            points.append((cx + math.cos(a) * r, cy + math.sin(a) * r))
-    elif pattern in {"fanR", "fanL", "doubleFan"}:
-        side = -1 if pattern == "fanL" else 1
-        for i in range(count):
-            a = -1.15 + i * 2.3 / max(1, count - 1); r = 6.2 if pattern != "doubleFan" or i % 2 else 4.2
-            points.append((cx + side * math.cos(a) * r, cy + math.sin(a) * r))
-    else:
-        side = -1 if pattern == "crescentL" else 1
-        for i in range(count):
-            a = -1.25 + i * 2.5 / max(1, count - 1)
-            points.append((cx + side * math.cos(a) * 6.2, cy + math.sin(a) * 5.8))
+    if count <= 0:
+        return []
+
+    # Every decorated stage is a real radial cluster: the stage root occupies
+    # the exact centre used by the background, and every dependent quest sits
+    # on the same visible ellipse.  Previously the root was merely the first
+    # point of a fan/grid/pattern, so the decorative circle did not describe
+    # the actual quest positions.
+    points = [(cx, cy)]
+    branch_count = count - 1
+    if branch_count == 0:
+        return points
+
+    radius_x, radius_y = 6.2, 5.8
+    rotation = {
+        "fanR": -math.pi / 2,
+        "fanL": math.pi / 2,
+        "crescentR": -math.pi / 2,
+        "crescentL": math.pi / 2,
+        "crescentD": 0.0,
+        "diamond": math.pi / 4,
+        "grid": 0.0,
+        "mirror": math.pi / 2,
+        "star": -math.pi / 2,
+        "ritual": -math.pi / 2,
+        "containment": math.pi / 2,
+        "doubleFan": 0.0,
+        "doubleRing": math.pi / 4,
+    }.get(pattern, -math.pi / 2)
+    for index in range(branch_count):
+        angle = rotation + index * math.tau / branch_count
+        points.append((cx + math.cos(angle) * radius_x, cy + math.sin(angle) * radius_y))
     return points
 
 

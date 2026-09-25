@@ -71,8 +71,8 @@ def ids_from_zip(path: Path) -> tuple[set[str], set[str], set[str]]:
     return quest_ids, task_ids, reward_ids
 
 
-previous = ROOT / "PokeTechArcana-quests-book-1.15.3.zip"
-current = ROOT / "PokeTechArcana-quests-book-1.15.4.zip"
+previous = ROOT / "PokeTechArcana-quests-book-1.15.4.zip"
+current = ROOT / f"PokeTechArcana-quests-book-{module.PACKAGE_VERSION}.zip"
 if previous.exists():
     old_ids = ids_from_zip(previous)
     new_ids = ids_from_zip(current)
