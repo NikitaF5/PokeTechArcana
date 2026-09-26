@@ -9,7 +9,7 @@ import zipfile
 from dataclasses import dataclass, replace
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageEnhance, ImageFont, ImageOps
 
 import build_mekanism_quests as old_mek
 import build_create_quests as create_data
@@ -23,6 +23,10 @@ BUILD = ROOT / "book-build"
 QUESTS = BUILD / "config" / "ftbquests" / "quests"
 ASSETS = BUILD / "kubejs" / "assets"
 CLIENT_PACK = WORKSPACE / "skyblock-update" / "pack"
+BOOK_REFERENCE = ROOT / "assets" / "book_reference.png"
+APPROVED_BOOK_BACKGROUND = ROOT / "background-options" / "01-royal-ledger-hd.png"
+APPROVED_BOOK_ASPECT = 4096 / 1920
+APPROVED_BOOK_RESOURCE = "poketech:textures/quests/backgrounds/royal_ledger_book.png"
 # FTB Quests 2101.1.27 parses IDs with Long.parseLong(..., 16), so the
 # highest bit must stay clear. IDs beginning with 8-F are silently replaced
 # at load time, which breaks translations and dependency references.
@@ -86,7 +90,7 @@ ATLAS_CHAPTER_ID = "0005A2ECAFE70002"
 THREATS_CHAPTER_ID = "0005A2ECAFE70003"
 INTEGRATION_CHAPTER_ID = "0005A2ECAFE70004"
 FINALE_CHAPTER_ID = "0005A2ECAFE70005"
-PACKAGE_VERSION = "1.15.7"
+PACKAGE_VERSION = "1.15.11"
 
 
 @dataclass(frozen=True)
@@ -415,32 +419,96 @@ def pretty_item(item_id: str) -> str:
     return f"{label} ({mod})"
 
 
-def obtain_advice(item_id: str) -> str:
+ITEM_KIND_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("spawn_egg", ("_spawn_egg",)),
+    ("key", ("key", "lock", "flute", "plume", "footprint", "cocoon", "map", "compass")),
+    ("trophy", ("heart", "horn", "fang", "tooth", "skull", "soul", "disc", "ashes", "boss_drop")),
+    ("machine", ("machine", "factory", "furnace", "generator", "reactor", "controller", "press", "crusher", "sieve", "hammer", "storage", "tank", "cell", "cable", "pipe", "gearbox", "motor", "table", "altar", "pedestal", "port", "terminal", "drive")),
+    ("gear", ("sword", "axe", "pickaxe", "shovel", "hoe", "helmet", "chestplate", "leggings", "boots", "shield", "bow", "staff", "wand", "dagger", "spear", "gauntlet", "amulet", "ring", "belt", "cloak")),
+    ("crop", ("seed", "sapling", "crop", "food", "bread", "meat", "apple", "carrot", "wheat", "apricorn", "rice", "tomato", "onion")),
+    ("material", ("ingot", "dust", "nugget", "shard", "essence", "crystal", "gem", "chunk", "plate", "wire", "alloy", "cloth", "fiber", "log")),
+    ("consumable", ("potion", "candy", "bottle", "scroll", "tablet", "book", "rune", "blueprint", "pattern", "upgrade")),
+)
+
+
+LOOT_NAMESPACES = {
+    "artifacts", "relics", "cataclysm", "mowziesmobs", "bosses_of_mass_destruction",
+    "block_factorys_bosses", "born_in_chaos_v1", "mutantmonsters",
+}
+
+SPECIAL_ITEM_GUIDANCE = {
+    "legendarymonuments:dragon_golem_key": (
+        "Скрафти Dragon Golem Key из 1 Dragon Gem и 3 Dragon Golem Ingots. "
+        "Ключ нужен у монумента Regidrago в Snowpoint Temple, поэтому сохрани его до призыва."
+    ),
+}
+
+
+def item_kind(item_id: str) -> str:
     namespace, name = item_id.split(":", 1)
-    if name.endswith("_spawn_egg"):
-        return "Используй яйца призыва внутри огороженного и освещённого загона, чтобы животные не упали с острова."
-    if namespace in {"artifacts", "relics"}:
-        return "Проверь предмет в JEI: такие находки обычно добываются в сундуках структур, с мимиков или за исследование, а не обычным крафтом."
-    if namespace in {"cataclysm", "mowziesmobs", "bosses_of_mass_destruction", "block_factorys_bosses", "born_in_chaos_v1", "mutantmonsters"}:
-        return "Сначала нажми R в JEI. Если рецепта нет, подготовь еду, точку возврата и свободный инвентарь: предмет является трофеем существа или структуры."
-    if any(part in name for part in ("ingot", "dust", "nugget", "shard", "essence", "crystal", "gem", "chunk", "plate", "wire")):
-        return "Нажми R по предмету в JEI и выбери доступную цепочку переработки; начни с сырья и проверь требуемую машину, температуру или реагент."
-    if any(part in name for part in ("seed", "sapling", "crop", "food", "bread", "meat", "apple", "carrot", "wheat", "apricorn")):
-        return "Получи первый экземпляр через крафт, урожай или добычу, затем организуй возобновляемый запас до расходования предмета."
-    if any(part in name for part in ("sword", "axe", "pickaxe", "shovel", "hoe", "helmet", "chestplate", "leggings", "boots", "shield", "bow", "staff", "wand")):
-        return "Открой рецепт в JEI, подготовь материалы нужного уровня и изготовь предмет; перед боем проверь прочность, зачарования и подходящую стойку."
-    if any(part in name for part in ("machine", "factory", "furnace", "generator", "reactor", "controller", "press", "crusher", "sieve", "hammer", "storage", "tank", "cell", "cable", "pipe", "gearbox", "motor")):
-        return "Собери компоненты по рецепту JEI снизу вверх, установи устройство в безопасной тестовой линии и только затем подключай питание, жидкости или сеть."
-    return "Нажми R по значку цели в JEI, чтобы увидеть рецепт или способ получения; если рецепта нет, проверь книгу мода, структуры и таблицы добычи."
+    if namespace in LOOT_NAMESPACES:
+        return "trophy"
+    for kind, markers in ITEM_KIND_RULES:
+        if any(marker in name for marker in markers):
+            return kind
+    return "item"
+
+
+def obtain_advice(item_id: str) -> str:
+    """Explain a quest objective without inventing a recipe or loot source."""
+    if item_id in SPECIAL_ITEM_GUIDANCE:
+        return SPECIAL_ITEM_GUIDANCE[item_id]
+    display = pretty_item(item_id)
+    kind = item_kind(item_id)
+    if kind == "spawn_egg":
+        return f"Добудь {display} и используй яйцо только внутри закрытого загона: так существо не упадёт с острова."
+    if kind == "key":
+        return (
+            f"Найди {display} во время исследования соответствующего контента мода. "
+            "Это ключевой предмет этапа: сохрани его, пока не откроешь связанную структуру, событие или следующую цель."
+        )
+    if kind == "trophy":
+        return (
+            f"Получи {display} как трофей связанного испытания. "
+            "Подготовь лечение, свободное место в инвентаре и безопасный путь возвращения, затем сохрани добычу для следующих заданий."
+        )
+    if kind == "machine":
+        return (
+            f"Изготовь {display} из компонентов этого этапа и поставь устройство в своей рабочей зоне. "
+            "Подключай только те ресурсы, энергию или сеть, которые нужны самому устройству; предмет должен остаться в инвентаре для зачёта."
+        )
+    if kind == "gear":
+        return (
+            f"Изготовь или добудь {display}, затем экипируй предмет и проверь его основное действие. "
+            "Не расходуй и не разбирай его до зачёта задания."
+        )
+    if kind == "crop":
+        return (
+            f"Получи {display} через выращивание, сбор урожая или доступный рецепт. "
+            "Оставь хотя бы один экземпляр для разведения или повторной посадки, чтобы источник стал возобновляемым."
+        )
+    if kind == "material":
+        return (
+            f"Произведи {display} из сырья и оборудования, уже открытых в этой части цепочки. "
+            "Сохрани требуемое количество в инвентаре: этот материал понадобится в последующих деталях и устройствах цепочки."
+        )
+    if kind == "consumable":
+        return (
+            f"Изготовь или добудь {display}. Сначала положи требуемое количество в инвентарь для зачёта, "
+            "после чего используй предмет по назначению в следующем шаге цепочки."
+        )
+    return (
+        f"Получи {display} способом, доступным в текущем этапе, и положи предмет в инвентарь для зачёта. "
+        "Сохрани его: следующая часть ветки использует этот предмет или продолжает связанную с ним механику."
+    )
 
 
 def educational_description(namespace: str, quest: Quest) -> str:
     goals = ", ".join(f"{count}× {pretty_item(item_id)}" for item_id, count in quest.tasks)
     first_item = quest.tasks[0][0]
     return (
-        f"Для задания «{quest.title}» подготовь {goals}. {obtain_advice(first_item)} "
-        f"В {MOD_NAMES[namespace]} этот шаг развивает {CHAPTER_FOCUS[namespace]}. "
-        "После получения нажми U в JEI, посмотри применения предмета и испытай его в небольшой рабочей сборке перед масштабированием."
+        f"Цель задания: получи {goals}. {obtain_advice(first_item)} "
+        f"В {MOD_NAMES[namespace]} этот шаг подготавливает {CHAPTER_FOCUS[namespace]}."
     )
 
 
@@ -489,7 +557,7 @@ def refine_quest(namespace: str, quest: Quest) -> Quest:
         goals = ", ".join(f"{count}× {pretty_item(item_id)}" for item_id, count in quest.tasks)
         description = (
             f"{quest.desc.rstrip()} Цель этапа: {goals}. {obtain_advice(quest.tasks[0][0])} "
-            f"Этот шаг помогает освоить {CHAPTER_FOCUS[namespace]}; после получения нажми U в JEI и проверь дальнейшие применения предмета."
+            f"Этот шаг подготавливает {CHAPTER_FOCUS[namespace]}."
         )
     reward = balanced_reward(namespace, quest)
     stage_root = quest.key.endswith("_01") or quest.key in MILESTONES_PREVIEW.get(namespace, ())
@@ -605,6 +673,13 @@ def chapter_geometry(quests: list[Quest]) -> tuple[float, float, float, float]:
     height = max_y - min_y + top_pad + bottom_pad
     cx = (min_x + max_x + right_pad - left_pad) / 2
     cy = (min_y + max_y + bottom_pad - top_pad) / 2
+    # FTB Quests stretches chapter images to the declared width and height.
+    # Expand only the shorter axis so the approved 4096x1920 artwork keeps its
+    # original aspect ratio while still containing every quest coordinate.
+    if width / height < APPROVED_BOOK_ASPECT:
+        width = height * APPROVED_BOOK_ASPECT
+    else:
+        height = width / APPROVED_BOOK_ASPECT
     return width, height, cx, cy
 
 
@@ -612,7 +687,7 @@ def make_chapter(namespace: str, chapter_id: str, title: str, order: int, icon: 
     width, height, cx, cy = chapter_geometry(quests)
     return "\n".join([
         "{",
-        f"\tdefault_hide_dependency_lines: {'true' if namespace in next_chapters.CHAPTERS else 'false'}",
+        "\tdefault_hide_dependency_lines: false",
         "\tdefault_min_width: 270",
         "\tdefault_quest_shape: \"circle\"",
         f"\tfilename: {q(namespace)}",
@@ -622,7 +697,7 @@ def make_chapter(namespace: str, chapter_id: str, title: str, order: int, icon: 
         f"\ttitle: {q(title)}",
         "\timages: [{",
         f"\t\theight: {height:.2f}d",
-        f"\t\timage: {q(background)}",
+        f"\t\timage: {q(APPROVED_BOOK_RESOURCE)}",
         "\t\torder: -10",
         "\t\trotation: 0.0d",
         f"\t\twidth: {width:.2f}d",
@@ -688,113 +763,63 @@ def make_tile(path: Path):
     image.save(path)
 
 
+def _book_background(image_w: int, image_h: int) -> Image.Image:
+    """Create a wide book page without raster text or decorative routes."""
+    if not BOOK_REFERENCE.exists():
+        raise FileNotFoundError(f"missing book background reference: {BOOK_REFERENCE}")
+    source = Image.open(BOOK_REFERENCE).convert("RGBA")
+
+    # Use the clean centre of the supplied page as the readable parchment.
+    centre = source.crop((64, 92, 330, 466))
+    paper = ImageOps.fit(centre, (image_w, image_h), method=Image.Resampling.LANCZOS)
+    paper = ImageEnhance.Color(paper).enhance(0.60)
+    paper = ImageEnhance.Brightness(paper).enhance(1.16)
+    paper = ImageEnhance.Contrast(paper).enhance(0.86)
+    page = paper.convert("RGBA")
+    page = Image.alpha_composite(page, Image.new("RGBA", (image_w, image_h), (246, 235, 211, 48)))
+
+    # Stretch the dark leather sides. The ornate corner and centre motifs are
+    # redrawn as clean line work below, avoiding rectangular seams from the
+    # portrait reference when fitted to a wide quest map.
+    border_x = min(102, max(70, image_w // 16))
+    border_y = min(102, max(68, image_h // 13))
+    draw = ImageDraw.Draw(page, "RGBA")
+    draw.rectangle((0, 0, border_x, image_h), fill=(85, 43, 18, 165))
+    draw.rectangle((image_w - border_x, 0, image_w, image_h), fill=(85, 43, 18, 165))
+    draw.rectangle((0, 0, image_w, border_y), fill=(108, 60, 24, 115))
+    draw.rectangle((0, image_h - border_y, image_w, image_h), fill=(108, 60, 24, 115))
+    draw.rounded_rectangle((20, 20, image_w - 20, image_h - 20), radius=28,
+                           outline=(91, 57, 29, 180), width=6)
+    draw.rounded_rectangle((border_x + 16, border_y + 14, image_w - border_x - 16, image_h - border_y - 14),
+                           radius=18, outline=(126, 84, 44, 95), width=3)
+    ornament = (80, 44, 18, 175)
+    for cx, cy in ((border_x, border_y), (image_w - border_x, border_y),
+                   (border_x, image_h - border_y), (image_w - border_x, image_h - border_y)):
+        draw.ellipse((cx - 34, cy - 34, cx + 34, cy + 34), outline=ornament, width=4)
+        draw.ellipse((cx - 15, cy - 15, cx + 15, cy + 15), outline=ornament, width=3)
+        draw.line((cx - 45, cy, cx + 45, cy), fill=ornament, width=3)
+        draw.line((cx, cy - 45, cx, cy + 45), fill=ornament, width=3)
+    for cy in (border_y // 2, image_h - border_y // 2):
+        cx = image_w // 2
+        draw.polygon(((cx, cy - 27), (cx + 38, cy), (cx, cy + 27), (cx - 38, cy)),
+                     outline=ornament, width=4)
+        draw.ellipse((cx - 12, cy - 12, cx + 12, cy + 12), outline=ornament, width=3)
+    return page
+
+
 def make_background(path: Path, title: str, stages: list[str], palette: list[tuple[int, int, int]],
                     quests: list[Quest]):
-    width_units, height_units, _, _ = chapter_geometry(quests)
-    image_w = 2048
-    image_h = max(1200, round(image_w * height_units / width_units))
-    image = Image.new("RGBA", (image_w, image_h), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(image, "RGBA")
-    margin = 22
-    draw.rounded_rectangle((margin, margin, image_w - margin, image_h - margin), radius=24,
-                           fill=(246, 240, 228, 24), outline=(91, 71, 47, 120), width=5)
-    draw.line((72, 174, image_w - 72, 174), fill=(111, 83, 51, 125), width=3)
-    draw.text((72, 54), title, font=font(50, True), fill=(62, 48, 31, 215))
-    draw.text((74, 122), "POKETECH ARCANA · КНИГА РАЗВИТИЯ", font=font(20, True), fill=(91, 70, 45, 165))
-    cell = (image_w - 144) / len(stages)
-    strip_top, strip_bottom = 206, 282
-    for i, stage in enumerate(stages):
-        x0 = 72 + i * cell
-        color = palette[i % len(palette)]
-        draw.rectangle((x0, strip_top, x0 + cell, strip_bottom),
-                       fill=(248, 244, 236, 205), outline=(103, 82, 55, 105), width=2)
-        draw.rectangle((x0, strip_top, x0 + 8, strip_bottom), fill=(*color, 155))
-        draw.text((x0 + 20, strip_top + 26), stage, font=font(17, True), fill=(69, 54, 37, 220))
-        band_top = strip_bottom + 18
-        draw.rectangle((x0, band_top, x0 + cell, image_h - 54), fill=(*color, 10))
-        draw.line((x0 + cell / 2, band_top + 18, x0 + cell / 2, image_h - 72),
-                  fill=(*color, 24), width=2)
-    draw.line((72, strip_bottom + 1, image_w - 72, strip_bottom + 1), fill=(91, 71, 47, 95), width=3)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    image.save(path)
+    if not APPROVED_BOOK_BACKGROUND.exists():
+        raise FileNotFoundError(f"missing approved quest background: {APPROVED_BOOK_BACKGROUND}")
+    shared_path = path.parent / "royal_ledger_book.png"
+    shared_path.parent.mkdir(parents=True, exist_ok=True)
+    if not shared_path.exists():
+        shutil.copyfile(APPROVED_BOOK_BACKGROUND, shared_path)
 
 
 def make_atlas_background(path: Path, title: str, namespace: str, quests: list[Quest],
                           palette: list[tuple[int, int, int]]):
-    width_units, height_units, _, _ = chapter_geometry(quests)
-    min_x, max_x = min(q.x for q in quests) - 4, max(q.x for q in quests) + 4
-    min_y, max_y = min(q.y for q in quests) - 8, max(q.y for q in quests) + 4
-    image_w = 2048
-    image_h = max(960, round(image_w * height_units / width_units))
-    image = Image.new("RGBA", (image_w, image_h), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(image, "RGBA")
-    margin = 22
-    draw.rounded_rectangle((margin, margin, image_w - margin, image_h - margin), radius=24,
-                           fill=(246, 240, 228, 28), outline=(91, 71, 47, 125), width=5)
-    draw.text((64, 48), title, font=font(42, True), fill=(62, 48, 31, 215))
-    draw.text((66, 106), "POKETECH ARCANA · КАРТА ПРОГРЕССИИ", font=font(18, True), fill=(91, 70, 45, 165))
-
-    def point(x: float, y: float) -> tuple[float, float]:
-        return ((x - min_x) / (max_x - min_x) * image_w,
-                (y - min_y) / (max_y - min_y) * image_h)
-
-    def bezier(a: Quest, b: Quest, color: tuple[int, int, int, int], width: int) -> None:
-        x1, y1 = point(a.x, a.y)
-        x2, y2 = point(b.x, b.y)
-        bend = max(1.5, abs(b.x - a.x) * .32) / (max_x - min_x) * image_w
-        samples = []
-        for step in range(25):
-            t = step / 24
-            u = 1 - t
-            x = u ** 3 * x1 + 3 * u * u * t * (x1 + bend) + 3 * u * t * t * (x2 - bend) + t ** 3 * x2
-            y = u ** 3 * y1 + 3 * u * u * t * y1 + 3 * u * t * t * y2 + t ** 3 * y2
-            samples.append((x, y))
-        draw.line(samples, fill=color, width=width, joint="curve")
-
-    config = next_chapters.CHAPTERS[namespace]
-    stage_count = len(config["stages"])
-    stage_quests: list[list[Quest]] = [[] for _ in range(stage_count)]
-    for quest in quests:
-        match = re.fullmatch(r"s(\d{2})_\d{2}", quest.key)
-        if not match:
-            raise ValueError(f"{namespace}: quest {quest.key!r} has no stage number")
-        stage_index = int(match.group(1)) - 1
-        if not 0 <= stage_index < stage_count:
-            raise ValueError(f"{namespace}: invalid stage in quest {quest.key!r}")
-        stage_quests[stage_index].append(quest)
-    if any(not cluster for cluster in stage_quests):
-        raise ValueError(f"{namespace}: an empty stage cannot be decorated")
-
-    by_key = {quest.key: quest for quest in quests}
-    # FTB Quests normally draws straight dependency lines.  For these 41
-    # approved chapters they are hidden and reproduced in the background with
-    # the same curved geometry as the reviewed preview.
-    for quest in quests:
-        for dependency in quest.deps:
-            parent = by_key.get(dependency)
-            if parent is not None:
-                bezier(parent, quest, (75, 72, 68, 145), 7 if parent.tag == "pta_main" and quest.tag == "pta_main" else 5)
-
-    # Draw the coloured chapter route between exact stage roots.
-    roots = [next(quest for quest in cluster if quest.key.endswith("_01")) for cluster in stage_quests]
-    for index in range(stage_count - 1):
-        color = palette[index % len(palette)]
-        bezier(roots[index], roots[index + 1], (*color, 48), 13)
-
-    # Stage names are anchored to the same root coordinates as in the preview.
-    for index, (root, stage) in enumerate(zip(roots, config["stages"])):
-        color = palette[index % len(palette)]
-        root_x, root_y = point(root.x, root.y)
-        label = stage[1]
-        label_font = font(18, True)
-        bbox = draw.textbbox((0, 0), label, font=label_font)
-        label_w = bbox[2] - bbox[0]
-        label_y = root_y - 78
-        draw.rounded_rectangle((root_x - 8, label_y - 5, root_x + label_w + 10, label_y + 26),
-                               radius=8, fill=(246, 240, 228, 210))
-        draw.text((root_x, label_y), label, font=label_font, fill=(*color, 225))
-    path.parent.mkdir(parents=True, exist_ok=True)
-    image.save(path)
+    make_background(path, title, [], palette, quests)
 
 
 def make_guide(path: Path, title: str, subtitle: str, color: tuple[int, int, int], stage: int):
@@ -852,7 +877,7 @@ dependency_line_requires_color: #FF247FA0
 dependency_line_required_for_color: #FFB36416
 dependency_line_selected_speed: 0.5
 dependency_line_unselected_speed: 0.0
-dependency_line_thickness: 0.34
+dependency_line_thickness: 0.52
 quest_spacing: 1.0
 
 [#pta_main]
